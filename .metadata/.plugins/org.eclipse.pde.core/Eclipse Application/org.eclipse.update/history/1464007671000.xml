@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config date="1464007671438" transient="false" version="3.0">
+<site enabled="true" policy="USER-EXCLUDE" updateable="true" url="platform:/base/">
+<feature id="org.eclipse.equinox.p2.user.ui" url="features/org.eclipse.equinox.p2.user.ui_2.2.0.dist-62DG8ltBaLdNsDyHEh7m9FbLOK8/" version="2.2.0.dist-62DG8ltBaLdNsDyHEh7m9FbLOK8">
+</feature>
+<feature id="org.eclipse.help" plugin-identifier="org.eclipse.help.base" url="features/org.eclipse.help_1.4.1.dist-8v7oFRvFCmSPZkILLj597H/" version="1.4.1.dist-8v7oFRvFCmSPZkILLj597H">
+</feature>
+<feature id="org.eclipse.platform" url="features/org.eclipse.platform_3.8.1.dist-A8F8_IVSG4WGSImg7oLZb9p1HecSFyJZcMPL9/" version="3.8.1.dist-A8F8_IVSG4WGSImg7oLZb9p1HecSFyJZcMPL9">
+</feature>
+<feature id="org.eclipse.equinox.p2.extras.feature" url="features/org.eclipse.equinox.p2.extras.feature_1.1.0.dist-7A6FEcBpDPXGofGLmS7BA7/" version="1.1.0.dist-7A6FEcBpDPXGofGLmS7BA7">
+</feature>
+<feature id="org.eclipse.rcp" url="features/org.eclipse.rcp_3.8.1.dist-92A7GODFSNQBG/" version="3.8.1.dist-92A7GODFSNQBG">
+</feature>
+<feature id="org.eclipse.equinox.p2.core.feature" url="features/org.eclipse.equinox.p2.core.feature_1.1.0.dist-829GFneFKlR6A96/" version="1.1.0.dist-829GFneFKlR6A96">
+</feature>
+<feature id="org.eclipse.cvs" url="features/org.eclipse.cvs_1.3.200.dist-7B79FJJ9exZ_/" version="1.3.200.dist-7B79FJJ9exZ_">
+</feature>
+<feature id="org.eclipse.equinox.p2.rcp.feature" url="features/org.eclipse.equinox.p2.rcp.feature_1.1.0.dist-785EoAUkckGofGLmS7BA7/" version="1.1.0.dist-785EoAUkckGofGLmS7BA7">
+</feature>
+</site>
+</config>
