@@ -1,7 +1,14 @@
 package eclipseplugin.views;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.syncope.client.lib.SyncopeClient;
+import org.apache.syncope.client.lib.SyncopeClientFactoryBean;
+import org.apache.syncope.common.lib.to.MailTemplateTO;
+import org.apache.syncope.common.lib.to.ReportTemplateTO;
+import org.apache.syncope.common.rest.api.service.MailTemplateService;
+import org.apache.syncope.common.rest.api.service.ReportTemplateService;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
@@ -12,9 +19,6 @@ import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
-
-import rest.helper.MailTemplates;
-import rest.helper.ReportTemplates;
 
 public class SyncopeView extends ViewPart {
 
@@ -126,14 +130,16 @@ public class SyncopeView extends ViewPart {
 			TreeParent p1 = new TreeParent("Mail Templates");
 	    	TreeParent p2 = new TreeParent("Report XSLTs");
 	        
+	    	SyncopeClient syncopeClient = new SyncopeClientFactoryBean() 
+										    	.setAddress("http://localhost:9080/syncope/rest/")
+										    	.create("admin", "password");
 	    	//Adding mailTemplates to View
 	    	try{
-	    		ArrayList mailTemplateKeys = MailTemplates.getTemplateKeys();
-	    		ArrayList mailTemplateKeyObjects = new ArrayList();
+	    		MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
+		    	List<MailTemplateTO> mailTemplateTOs = mailTemplateService.list();
 	        	
-	        	for(int i=0;i<mailTemplateKeys.size();i++){
-	        		TreeObject obj = new TreeObject((String)mailTemplateKeys.get(i));
-	        		mailTemplateKeyObjects.add(obj);
+	        	for(int i=0;i<mailTemplateTOs.size();i++){
+	        		TreeObject obj = new TreeObject(mailTemplateTOs.get(i).getKey());
 	        		p1.addChild(obj);
 	        	}
 	    	}catch(Exception e){
@@ -142,12 +148,11 @@ public class SyncopeView extends ViewPart {
 	    	
 	    	//Adding reportTemplates to View
 	    	try{
-	    		ArrayList reportTemplateKeys = ReportTemplates.getTemplateKeys();
-	    		ArrayList reportTemplateKeyObjects = new ArrayList();
+	    		ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
+		    	List<ReportTemplateTO> reportTemplateTOs = reportTemplateService.list();
 	        	
-	        	for(int i=0;i<reportTemplateKeys.size();i++){
-	        		TreeObject obj = new TreeObject((String)reportTemplateKeys.get(i));
-	        		reportTemplateKeyObjects.add(obj);
+	        	for(int i=0;i<reportTemplateTOs.size();i++){
+	        		TreeObject obj = new TreeObject(reportTemplateTOs.get(i).getKey());
 	        		p2.addChild(obj);
 	        	}
 	    	}catch(Exception e){

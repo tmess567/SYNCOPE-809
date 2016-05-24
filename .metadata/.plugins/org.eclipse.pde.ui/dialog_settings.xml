@@ -6,6 +6,8 @@
 	<item value="false" key="apiAnalysis"/>
 	<item value="false" key="rcpPlugin"/>
 	<item value="false" key="osgiProject"/>
+	<section name="dependenciesView">
+	</section>
 	<section name="quick_assist_proposal_size">
 	</section>
 </section>

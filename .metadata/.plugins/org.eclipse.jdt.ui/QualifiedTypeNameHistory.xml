@@ -1,2 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<qualifiedTypeNameHistroy/>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="rest.helper.MailTemplates"/>
+<fullyQualifiedTypeName name="rest.helper.ReportTemplates"/>
+<fullyQualifiedTypeName name="eclipseplugin.views.SyncopeView"/>
+<fullyQualifiedTypeName name="org.apache.syncope.client.lib.SyncopeClientFactoryBean"/>
+<fullyQualifiedTypeName name="org.apache.syncope.client.lib.SyncopeClient"/>
+<fullyQualifiedTypeName name="org.apache.syncope.common.rest.api.service.MailTemplateService"/>
+<fullyQualifiedTypeName name="org.apache.syncope.common.lib.to.MailTemplateTO"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+</qualifiedTypeNameHistroy>

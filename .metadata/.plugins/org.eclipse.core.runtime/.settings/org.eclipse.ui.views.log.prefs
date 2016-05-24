@@ -1,9 +1,10 @@
 activate=true
-column2=300
-column3=150
-column4=519
+column2=701
+column3=285
+column4=837
 eclipse.preferences.version=1
 groupBy=0
+maxLogTailSize=1
 orderType=2
-orderValue=-1
+orderValue=1
 show_filter_text=true
