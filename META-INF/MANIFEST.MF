@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: EclipsePlugin
 Bundle-SymbolicName: EclipsePlugin; singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: eclipseplugin.Activator
+Bundle-Activator: org.apache.syncope.ide.eclipse.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime
 Bundle-ActivationPolicy: lazy

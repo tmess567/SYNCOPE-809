@@ -1,4 +1,4 @@
-package eclipseplugin;
+package org.apache.syncope.ide.eclipse;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;

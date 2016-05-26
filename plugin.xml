@@ -12,8 +12,8 @@
             name="Syncope View"
             icon="icons/sample.gif"
             category="EclipsePlugin"
-            class="eclipseplugin.views.SyncopeView"
-            id="eclipseplugin.views.SyncopeView">
+            class="org.apache.syncope.ide.eclipse.views.SyncopeView"
+            id="org.apache.syncope.ide.eclipse.views.SyncopeView">
       </view>
    </extension>
    <extension
@@ -24,7 +24,7 @@
                ratio="0.5"
                relative="org.eclipse.ui.views.ProblemView"
                relationship="right"
-               id="eclipseplugin.views.SyncopeView">
+               id="org.apache.syncope.ide.eclipse.views.SyncopeView">
          </view>
       </perspectiveExtension>
    </extension>
