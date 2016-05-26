@@ -159,7 +159,6 @@ public class SyncopeView extends ViewPart {
 		 * code, you will connect to a real model and expose its hierarchy.
 		 */
 		public void initialize() {
-			System.out.println("init called");
 			invisibleRoot = new TreeParent("");
 
 			if (this.deploymentUrl != null && !(this.deploymentUrl.equals("")) && this.username != null

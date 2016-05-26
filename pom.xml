@@ -6,17 +6,7 @@
   <name>Syncope-809</name>
   <description>Syncope-809 GSoC Project (Eclipse Plugin for Apache Syncope deployment : Allows user to view and edit Mail Templates and Report Templates from Eclipse itself)</description>
   <build>
-    <sourceDirectory>src</sourceDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.3</version>
-        <configuration>
-          <source/>
-          <target/>
-        </configuration>
-      </plugin>
-    </plugins>
+    <sourceDirectory>src/main/java</sourceDirectory>
   </build>
   <dependencies>
   	<dependency>
