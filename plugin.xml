@@ -10,7 +10,7 @@
       </category>
       <view
             name="Syncope View"
-            icon="icons/sample.gif"
+            icon="src/main/resources/icons/sample.gif"
             category="EclipsePlugin"
             class="org.apache.syncope.ide.eclipse.views.SyncopeView"
             id="org.apache.syncope.ide.eclipse.views.SyncopeView">
