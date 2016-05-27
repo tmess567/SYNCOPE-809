@@ -129,7 +129,7 @@ public class SyncopeView extends ViewPart {
 			if (parent.equals(getViewSite())) {
 				if (invisibleRoot == null)
 					initialize();
-					return getChildren(invisibleRoot);
+				return getChildren(invisibleRoot);
 			}
 			return getChildren(parent);
 		}
@@ -168,9 +168,8 @@ public class SyncopeView extends ViewPart {
 
 				SyncopeClient syncopeClient = new SyncopeClientFactoryBean().setAddress(this.deploymentUrl)
 						.create(this.username, this.password);
-
-				// Adding mailTemplates to View
 				try {
+					// Adding mailTemplates to View
 					MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
 					List<MailTemplateTO> mailTemplateTOs = mailTemplateService.list();
 
@@ -178,12 +177,8 @@ public class SyncopeView extends ViewPart {
 						TreeObject obj = new TreeObject(mailTemplateTOs.get(i).getKey());
 						p1.addChild(obj);
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-
-				// Adding reportTemplates to View
-				try {
+					invisibleRoot.addChild(p1);
+					// Adding reportTemplates to View
 					ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 					List<ReportTemplateTO> reportTemplateTOs = reportTemplateService.list();
 
@@ -191,12 +186,27 @@ public class SyncopeView extends ViewPart {
 						TreeObject obj = new TreeObject(reportTemplateTOs.get(i).getKey());
 						p2.addChild(obj);
 					}
+					invisibleRoot.addChild(p2);
 				} catch (Exception e) {
-					e.printStackTrace();
+					Shell shell = viewer.getControl().getShell();
+					if(e instanceof java.security.AccessControlException){
+						MessageDialog.openError(shell, 
+								"Incorrect Credentials", 
+								"Unable to authenticate "+this.username);
+					}
+					else if(e instanceof javax.ws.rs.ProcessingException){
+						MessageDialog.openError(shell, 
+								"Incorrect Url", 
+								"Unable to find syncope at "+this.deploymentUrl);
+					}
+					else if(e instanceof javax.xml.ws.WebServiceException){
+						MessageDialog.openError(shell, 
+								"Invalid Url", 
+								"Not a valid url "+this.username);
+					}
+					else
+						e.printStackTrace();
 				}
-
-				invisibleRoot.addChild(p1);
-				invisibleRoot.addChild(p2);
 			}
 		}
 	}
@@ -293,8 +303,7 @@ public class SyncopeView extends ViewPart {
 					String password = dialog.getPassword();
 					ViewContentProvider vcp = new ViewContentProvider(deploymentUrl, username, password);
 					vcp.initialize();
-					SyncopeView.this.viewer
-							.setContentProvider(vcp);
+					SyncopeView.this.viewer.setContentProvider(vcp);
 				}
 			}
 		};
