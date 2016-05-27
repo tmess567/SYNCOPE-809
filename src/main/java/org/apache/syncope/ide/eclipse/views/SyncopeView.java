@@ -269,7 +269,6 @@ public class SyncopeView extends ViewPart {
 
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
-		fillLocalPullDown(bars.getMenuManager());
 		fillLocalToolBar(bars.getToolBarManager());
 	}
 
@@ -288,7 +287,6 @@ public class SyncopeView extends ViewPart {
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(loginAction);
 		manager.add(new Separator());
-		drillDownAdapter.addNavigationActions(manager);
 	}
 
 	private void makeActions() {
