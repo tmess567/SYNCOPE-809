@@ -25,10 +25,7 @@ import org.apache.syncope.common.rest.api.service.ReportTemplateService;
 import org.eclipse.core.runtime.IAdaptable;
 
 public class SyncopeView extends ViewPart {
-
-	/**
-	 * The ID of the view as specified by the extension.
-	 */
+	
 	public static final String ID = "org.apache.syncope.ide.eclipse.views.SyncopeView";
 
 	private TreeViewer viewer;
@@ -36,14 +33,6 @@ public class SyncopeView extends ViewPart {
 	public ViewContentProvider vcp;
 	private Action loginAction;
 	private Action doubleClickAction;
-
-	/*
-	 * The content provider class is responsible for providing objects to the
-	 * view. It can wrap existing objects in adapters or simply return objects
-	 * as-is. These objects may be sensitive to the current input of the view,
-	 * or ignore it and always show the same content (like Task List, for
-	 * example).
-	 */
 
 	class TreeObject implements IAdaptable {
 		private String name;
@@ -241,7 +230,8 @@ public class SyncopeView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		drillDownAdapter = new DrillDownAdapter(viewer);
-		viewer.setContentProvider(new ViewContentProvider());
+		vcp = new ViewContentProvider();
+		viewer.setContentProvider(vcp);
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setSorter(new NameSorter());
 		viewer.setInput(getViewSite());
@@ -280,7 +270,6 @@ public class SyncopeView extends ViewPart {
 		manager.add(loginAction);
 		manager.add(new Separator());
 		drillDownAdapter.addNavigationActions(manager);
-		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
 
@@ -299,9 +288,13 @@ public class SyncopeView extends ViewPart {
 					String deploymentUrl = dialog.getDeploymentUrl();
 					String username = dialog.getUsername();
 					String password = dialog.getPassword();
-					ViewContentProvider vcp = new ViewContentProvider(deploymentUrl, username, password);
+					
+					vcp.deploymentUrl = deploymentUrl;
+					vcp.username = username;
+					vcp.password = password;
+					
 					vcp.initialize();
-					SyncopeView.this.viewer.setContentProvider(vcp);
+					SyncopeView.this.viewer.refresh();
 				}
 			}
 		};
