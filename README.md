@@ -19,7 +19,9 @@ Right Click in Project Explorer > Import > General > Existing Projects into Work
 
 ### Update and copy dependencies into project ###
 Assuming you have maven installed* and are able to access mvn command using the terminal/cmd, open a terminal/cmd window inside the EclipsePlugin project folder and run the following command.
+
     mvn dependency:copy-dependencies -DoutputDirectory=${project.build.directory}/lib
+    
 This will download and copy the dependencies to the projects target/lib folder. This is necessary since it provides the libraries required to connect to the syncope deployment.
 
 ## Running the plugin ##
@@ -31,7 +33,6 @@ This will start a new instance of Eclipse with our plugin installed. To view the
 
 Go to Window > Show View > Other.. > Syncope Category > Syncope View
 
-<<<<<<< HEAD
 Click on Login and enter details for the syncope deployment
 
 ![Login Dialog](http://imgur.com/ONCaoWi.png)
