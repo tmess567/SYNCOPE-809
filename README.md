@@ -24,13 +24,12 @@ Right Click in Project Explorer > Import > General > Existing Projects into Work
 ## Running the plugin ##
 Eclipse provides the functionality of running a separate instance of eclipse with the plugin installed in it. This provides us the opportunity to both test and debug our plugin in the eclipse environment away from our current instance of eclipse where the plugin is built.
 
-Right Click on EclipsePlugin project > Run As > Eclipse Application
+Right Click on the project > Run As > Eclipse Application
 
 This will start a new instance of Eclipse with our plugin installed. To view the plugin,
 
 Go to Window > Show View > Other.. > Syncope Category > Syncope View
 
-<<<<<<< HEAD
 Click on Login and enter details for the syncope deployment
 
 ![Login Dialog](http://imgur.com/ONCaoWi.png)
