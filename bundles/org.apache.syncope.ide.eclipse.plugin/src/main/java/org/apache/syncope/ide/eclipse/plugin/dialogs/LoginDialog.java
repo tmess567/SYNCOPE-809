@@ -1,4 +1,4 @@
-package dialogs;
+package org.apache.syncope.ide.eclipse.plugin.dialogs;
 
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;

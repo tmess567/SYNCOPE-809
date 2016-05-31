@@ -1,33 +1,17 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>EclipsePlugin</groupId>
-  <artifactId>EclipsePlugin</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Syncope-809</name>
-  <description>Syncope-809 GSoC Project (Eclipse Plugin for Apache Syncope deployment : Allows user to view and edit Mail Templates and Report Templates from Eclipse itself)</description>
-  <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
-  </build>
-  <dependencies>
-  	<dependency>
-  		<groupId>org.apache.syncope.client</groupId>
-  		<artifactId>syncope-client-lib</artifactId>
-  		<version>2.0.0-SNAPSHOT</version>
-  	</dependency>
-  </dependencies>
-   <repositories>
-    <repository>
-      <id>apache.snapshots</id>
-      <name>Apache Snapshot Repository</name>
-      <url>http://repository.apache.org/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-   <parent>
-   	<groupId>org.apache.syncope</groupId>
-   	<artifactId>syncope</artifactId>
-   	<version>2.0.0-SNAPSHOT</version>
-   </parent>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.apache.syncope.ide.eclipse</groupId>
+	<artifactId>org.apache.syncope.ide.eclipse.root</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<parent>
+		<groupId>org.apache.syncope.ide.eclipse</groupId>
+		<artifactId>org.apache.syncope.ide.eclipse.configuration</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>./releng/org.apache.syncope.ide.eclipse.configuration</relativePath>
+	</parent>
+
+	<modules>
+		<module>bundles</module>
+	</modules>
 </project>

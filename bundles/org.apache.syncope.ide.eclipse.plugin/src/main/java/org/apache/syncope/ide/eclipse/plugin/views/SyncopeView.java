@@ -1,12 +1,10 @@
-package org.apache.syncope.ide.eclipse.views;
+package org.apache.syncope.ide.eclipse.plugin.views;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
-
-import dialogs.LoginDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Image;
@@ -22,71 +20,65 @@ import org.apache.syncope.common.lib.to.MailTemplateTO;
 import org.apache.syncope.common.lib.to.ReportTemplateTO;
 import org.apache.syncope.common.rest.api.service.MailTemplateService;
 import org.apache.syncope.common.rest.api.service.ReportTemplateService;
+import org.apache.syncope.ide.eclipse.plugin.dialogs.LoginDialog;
 import org.eclipse.core.runtime.IAdaptable;
 
 public class SyncopeView extends ViewPart {
-	
-	public static final String ID = "org.apache.syncope.ide.eclipse.views.SyncopeView";
+
+	/**
+	 * The ID of the view as specified by the extension.
+	 */
+	public static final String ID = "org.apache.syncope.ide.eclipse.plugin.views.SyncopeView";
 
 	private TreeViewer viewer;
 	private DrillDownAdapter drillDownAdapter;
 	public ViewContentProvider vcp;
 	private Action loginAction;
 	private Action doubleClickAction;
-
+	 
 	class TreeObject implements IAdaptable {
 		private String name;
 		private TreeParent parent;
-
+		
 		public TreeObject(String name) {
 			this.name = name;
 		}
-
 		public String getName() {
 			return name;
 		}
-
 		public void setParent(TreeParent parent) {
 			this.parent = parent;
 		}
-
 		public TreeParent getParent() {
 			return parent;
 		}
-
 		public String toString() {
 			return getName();
 		}
-
 		public Object getAdapter(Class key) {
 			return null;
 		}
 	}
-
+	
 	class TreeParent extends TreeObject {
 		private ArrayList children;
-
 		public TreeParent(String name) {
 			super(name);
 			children = new ArrayList();
 		}
-
 		public void addChild(TreeObject child) {
 			children.add(child);
 			child.setParent(this);
 		}
-
 		public void removeChild(TreeObject child) {
 			children.remove(child);
 			child.setParent(null);
 		}
-
-		public TreeObject[] getChildren() {
-			return (TreeObject[]) children.toArray(new TreeObject[children.size()]);
+		public TreeObject [] getChildren() {
+			return (TreeObject [])children.toArray(new TreeObject[children.size()]);
 		}
-
 		public boolean hasChildren() {
-			return children.size() > 0;
+			return children.size()>0;
 		}
 	}
 
@@ -199,21 +191,18 @@ public class SyncopeView extends ViewPart {
 			}
 		}
 	}
-
 	class ViewLabelProvider extends LabelProvider {
 
 		public String getText(Object obj) {
 			return obj.toString();
 		}
-
 		public Image getImage(Object obj) {
 			String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
 			if (obj instanceof TreeParent)
-				imageKey = ISharedImages.IMG_OBJ_FOLDER;
+			   imageKey = ISharedImages.IMG_OBJ_FOLDER;
 			return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
 		}
 	}
-
 	class NameSorter extends ViewerSorter {
 	}
 
@@ -224,8 +213,8 @@ public class SyncopeView extends ViewPart {
 	}
 
 	/**
-	 * This is a callback that will allow us to create the viewer and initialize
-	 * it.
+	 * This is a callback that will allow us
+	 * to create the viewer and initialize it.
 	 */
 	public void createPartControl(Composite parent) {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -237,7 +226,7 @@ public class SyncopeView extends ViewPart {
 		viewer.setInput(getViewSite());
 
 		// Create the help context id for the viewer's control
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "EclipsePlugin.viewer");
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.apache.syncope.ide.eclipse.plugin.viewer");
 		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
@@ -259,6 +248,7 @@ public class SyncopeView extends ViewPart {
 
 	private void contributeToActionBars() {
 		IActionBars bars = getViewSite().getActionBars();
+		fillLocalPullDown(bars.getMenuManager());
 		fillLocalToolBar(bars.getToolBarManager());
 	}
 
@@ -270,9 +260,10 @@ public class SyncopeView extends ViewPart {
 		manager.add(loginAction);
 		manager.add(new Separator());
 		drillDownAdapter.addNavigationActions(manager);
+		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
-
+	
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(loginAction);
 		manager.add(new Separator());
@@ -300,11 +291,12 @@ public class SyncopeView extends ViewPart {
 		};
 		loginAction.setText("Login");
 		loginAction.setToolTipText("Set Syncope deployment url and login");
+		
 		doubleClickAction = new Action() {
 			public void run() {
 				ISelection selection = viewer.getSelection();
-				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				showMessage("Double-click detected on " + obj.toString());
+				Object obj = ((IStructuredSelection)selection).getFirstElement();
+				showMessage("Double-click detected on "+obj.toString());
 			}
 		};
 	}
@@ -316,9 +308,11 @@ public class SyncopeView extends ViewPart {
 			}
 		});
 	}
-
 	private void showMessage(String message) {
-		MessageDialog.openInformation(viewer.getControl().getShell(), "Syncope View", message);
+		MessageDialog.openInformation(
+			viewer.getControl().getShell(),
+			"Syncope Templates",
+			message);
 	}
 
 	/**
