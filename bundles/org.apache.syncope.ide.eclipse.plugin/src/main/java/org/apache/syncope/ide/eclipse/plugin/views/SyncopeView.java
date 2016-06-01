@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
@@ -14,6 +15,7 @@ import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.apache.syncope.client.lib.SyncopeClient;
 import org.apache.syncope.client.lib.SyncopeClientFactoryBean;
 import org.apache.syncope.common.lib.to.MailTemplateTO;
@@ -22,6 +24,11 @@ import org.apache.syncope.common.rest.api.service.MailTemplateService;
 import org.apache.syncope.common.rest.api.service.ReportTemplateService;
 import org.apache.syncope.ide.eclipse.plugin.dialogs.LoginDialog;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 
 public class SyncopeView extends ViewPart {
 
@@ -35,50 +42,60 @@ public class SyncopeView extends ViewPart {
 	public ViewContentProvider vcp;
 	private Action loginAction;
 	private Action doubleClickAction;
-	 
+
 	class TreeObject implements IAdaptable {
 		private String name;
 		private TreeParent parent;
-		
+
 		public TreeObject(String name) {
 			this.name = name;
 		}
+
 		public String getName() {
 			return name;
 		}
+
 		public void setParent(TreeParent parent) {
 			this.parent = parent;
 		}
+
 		public TreeParent getParent() {
 			return parent;
 		}
+
 		public String toString() {
 			return getName();
 		}
+
 		public Object getAdapter(Class key) {
 			return null;
 		}
 	}
-	
+
 	class TreeParent extends TreeObject {
 		private ArrayList children;
+
 		public TreeParent(String name) {
 			super(name);
 			children = new ArrayList();
 		}
+
 		public void addChild(TreeObject child) {
 			children.add(child);
 			child.setParent(this);
 		}
+
 		public void removeChild(TreeObject child) {
 			children.remove(child);
 			child.setParent(null);
 		}
-		public TreeObject [] getChildren() {
-			return (TreeObject [])children.toArray(new TreeObject[children.size()]);
+
+		public TreeObject[] getChildren() {
+			return (TreeObject[]) children.toArray(new TreeObject[children.size()]);
 		}
+
 		public boolean hasChildren() {
-			return children.size()>0;
+			return children.size() > 0;
 		}
 	}
 
@@ -135,11 +152,7 @@ public class SyncopeView extends ViewPart {
 			return false;
 		}
 
-		/*
-		 * We will set up a dummy model to initialize tree heararchy. In a real
-		 * code, you will connect to a real model and expose its hierarchy.
-		 */
-		public void initialize() {
+		public void initialize() throws java.security.AccessControlException, javax.ws.rs.ProcessingException {
 			invisibleRoot = new TreeParent("");
 
 			if (this.deploymentUrl != null && !(this.deploymentUrl.equals("")) && this.username != null
@@ -149,60 +162,42 @@ public class SyncopeView extends ViewPart {
 
 				SyncopeClient syncopeClient = new SyncopeClientFactoryBean().setAddress(this.deploymentUrl)
 						.create(this.username, this.password);
-				try {
-					// Adding mailTemplates to View
-					MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
-					List<MailTemplateTO> mailTemplateTOs = mailTemplateService.list();
+				// Adding mailTemplates to View
+				MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
+				List<MailTemplateTO> mailTemplateTOs = mailTemplateService.list();
 
-					for (int i = 0; i < mailTemplateTOs.size(); i++) {
-						TreeObject obj = new TreeObject(mailTemplateTOs.get(i).getKey());
-						p1.addChild(obj);
-					}
-					invisibleRoot.addChild(p1);
-					// Adding reportTemplates to View
-					ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
-					List<ReportTemplateTO> reportTemplateTOs = reportTemplateService.list();
-
-					for (int i = 0; i < reportTemplateTOs.size(); i++) {
-						TreeObject obj = new TreeObject(reportTemplateTOs.get(i).getKey());
-						p2.addChild(obj);
-					}
-					invisibleRoot.addChild(p2);
-				} catch (Exception e) {
-					Shell shell = viewer.getControl().getShell();
-					if(e instanceof java.security.AccessControlException){
-						MessageDialog.openError(shell, 
-								"Incorrect Credentials", 
-								"Unable to authenticate "+this.username);
-					}
-					else if(e instanceof javax.ws.rs.ProcessingException){
-						MessageDialog.openError(shell, 
-								"Incorrect Url", 
-								"Unable to find syncope at "+this.deploymentUrl);
-					}
-					else if(e instanceof javax.xml.ws.WebServiceException){
-						MessageDialog.openError(shell, 
-								"Invalid Url", 
-								"Not a valid url "+this.username);
-					}
-					else
-						e.printStackTrace();
+				for (int i = 0; i < mailTemplateTOs.size(); i++) {
+					TreeObject obj = new TreeObject(mailTemplateTOs.get(i).getKey());
+					p1.addChild(obj);
 				}
+				invisibleRoot.addChild(p1);
+				// Adding reportTemplates to View
+				ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
+				List<ReportTemplateTO> reportTemplateTOs = reportTemplateService.list();
+
+				for (int i = 0; i < reportTemplateTOs.size(); i++) {
+					TreeObject obj = new TreeObject(reportTemplateTOs.get(i).getKey());
+					p2.addChild(obj);
+				}
+				invisibleRoot.addChild(p2);
 			}
 		}
 	}
+
 	class ViewLabelProvider extends LabelProvider {
 
 		public String getText(Object obj) {
 			return obj.toString();
 		}
+
 		public Image getImage(Object obj) {
 			String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
 			if (obj instanceof TreeParent)
-			   imageKey = ISharedImages.IMG_OBJ_FOLDER;
+				imageKey = ISharedImages.IMG_OBJ_FOLDER;
 			return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
 		}
 	}
+
 	class NameSorter extends ViewerSorter {
 	}
 
@@ -213,8 +208,8 @@ public class SyncopeView extends ViewPart {
 	}
 
 	/**
-	 * This is a callback that will allow us
-	 * to create the viewer and initialize it.
+	 * This is a callback that will allow us to create the viewer and initialize
+	 * it.
 	 */
 	public void createPartControl(Composite parent) {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -226,7 +221,8 @@ public class SyncopeView extends ViewPart {
 		viewer.setInput(getViewSite());
 
 		// Create the help context id for the viewer's control
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.apache.syncope.ide.eclipse.plugin.viewer");
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(),
+				"org.apache.syncope.ide.eclipse.plugin.viewer");
 		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
@@ -263,7 +259,7 @@ public class SyncopeView extends ViewPart {
 		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
-	
+
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(loginAction);
 		manager.add(new Separator());
@@ -279,24 +275,64 @@ public class SyncopeView extends ViewPart {
 					String deploymentUrl = dialog.getDeploymentUrl();
 					String username = dialog.getUsername();
 					String password = dialog.getPassword();
-					
+
 					vcp.deploymentUrl = deploymentUrl;
 					vcp.username = username;
 					vcp.password = password;
-					
-					vcp.initialize();
-					SyncopeView.this.viewer.refresh();
+
+					Display display = Display.getDefault();
+					Job job = new Job("Loading Templates") {
+						@Override
+						protected IStatus run(IProgressMonitor monitor) {
+							try {
+
+								try {
+									vcp.initialize();
+								} catch (Exception e) {
+									display.syncExec(new Runnable() {
+										public void run() {
+											Shell shell = viewer.getControl().getShell();
+											if (e instanceof java.security.AccessControlException) {
+												MessageDialog.openError(shell, "Incorrect Credentials",
+														"Unable to authenticate " + vcp.username);
+											} else if (e instanceof javax.ws.rs.ProcessingException) {
+												MessageDialog.openError(shell, "Incorrect Url",
+														"Unable to find syncope at " + vcp.deploymentUrl);
+											} else if (e instanceof javax.xml.ws.WebServiceException) {
+												MessageDialog.openError(shell, "Invalid Url",
+														"Not a valid url " + vcp.username);
+											} else
+												e.printStackTrace();
+										}
+									});
+								}
+
+								display.syncExec(new Runnable() {
+									public void run() {
+										// UI changes must be from main thread
+										SyncopeView.this.viewer.refresh();
+									}
+								});
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							return Status.OK_STATUS;
+						}
+					};
+					job.setUser(true);
+					job.schedule();
+
 				}
 			}
 		};
 		loginAction.setText("Login");
 		loginAction.setToolTipText("Set Syncope deployment url and login");
-		
+
 		doubleClickAction = new Action() {
 			public void run() {
 				ISelection selection = viewer.getSelection();
-				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				showMessage("Double-click detected on "+obj.toString());
+				Object obj = ((IStructuredSelection) selection).getFirstElement();
+				showMessage("Double-click detected on " + obj.toString());
 			}
 		};
 	}
@@ -308,11 +344,9 @@ public class SyncopeView extends ViewPart {
 			}
 		});
 	}
+
 	private void showMessage(String message) {
-		MessageDialog.openInformation(
-			viewer.getControl().getShell(),
-			"Syncope Templates",
-			message);
+		MessageDialog.openInformation(viewer.getControl().getShell(), "Syncope Templates", message);
 	}
 
 	/**
