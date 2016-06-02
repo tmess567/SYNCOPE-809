@@ -15,19 +15,18 @@ import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.BusyIndicator;
 import org.apache.syncope.client.lib.SyncopeClient;
 import org.apache.syncope.client.lib.SyncopeClientFactoryBean;
 import org.apache.syncope.common.lib.to.MailTemplateTO;
 import org.apache.syncope.common.lib.to.ReportTemplateTO;
 import org.apache.syncope.common.rest.api.service.MailTemplateService;
 import org.apache.syncope.common.rest.api.service.ReportTemplateService;
+import org.apache.syncope.ide.eclipse.plugin.dialogs.AddTemplateDialog;
 import org.apache.syncope.ide.eclipse.plugin.dialogs.LoginDialog;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 
 public class SyncopeView extends ViewPart {
@@ -38,10 +37,12 @@ public class SyncopeView extends ViewPart {
 	public static final String ID = "org.apache.syncope.ide.eclipse.plugin.views.SyncopeView";
 
 	private TreeViewer viewer;
-	private DrillDownAdapter drillDownAdapter;
 	public ViewContentProvider vcp;
+	private SyncopeClient syncopeClient;
 	private Action loginAction;
 	private Action doubleClickAction;
+	private Action addAction;
+	private Action removeAction;
 
 	class TreeObject implements IAdaptable {
 		private String name;
@@ -160,8 +161,8 @@ public class SyncopeView extends ViewPart {
 				TreeParent p1 = new TreeParent("Mail Templates");
 				TreeParent p2 = new TreeParent("Report XSLTs");
 
-				SyncopeClient syncopeClient = new SyncopeClientFactoryBean().setAddress(this.deploymentUrl)
-						.create(this.username, this.password);
+				syncopeClient = new SyncopeClientFactoryBean().setAddress(this.deploymentUrl).create(this.username,
+						this.password);
 				// Adding mailTemplates to View
 				MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
 				List<MailTemplateTO> mailTemplateTOs = mailTemplateService.list();
@@ -213,7 +214,6 @@ public class SyncopeView extends ViewPart {
 	 */
 	public void createPartControl(Composite parent) {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		drillDownAdapter = new DrillDownAdapter(viewer);
 		vcp = new ViewContentProvider();
 		viewer.setContentProvider(vcp);
 		viewer.setLabelProvider(new ViewLabelProvider());
@@ -253,9 +253,15 @@ public class SyncopeView extends ViewPart {
 	}
 
 	private void fillContextMenu(IMenuManager manager) {
-		manager.add(loginAction);
-		manager.add(new Separator());
-		drillDownAdapter.addNavigationActions(manager);
+
+		ISelection selection = viewer.getSelection();
+		Object obj = ((IStructuredSelection) selection).getFirstElement();
+		if (obj instanceof TreeParent) {
+			manager.add(addAction);
+		} else {
+			manager.add(removeAction);
+		}
+
 		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
@@ -280,48 +286,7 @@ public class SyncopeView extends ViewPart {
 					vcp.username = username;
 					vcp.password = password;
 
-					Display display = Display.getDefault();
-					Job job = new Job("Loading Templates") {
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							try {
-
-								try {
-									vcp.initialize();
-								} catch (Exception e) {
-									display.syncExec(new Runnable() {
-										public void run() {
-											Shell shell = viewer.getControl().getShell();
-											if (e instanceof java.security.AccessControlException) {
-												MessageDialog.openError(shell, "Incorrect Credentials",
-														"Unable to authenticate " + vcp.username);
-											} else if (e instanceof javax.ws.rs.ProcessingException) {
-												MessageDialog.openError(shell, "Incorrect Url",
-														"Unable to find syncope at " + vcp.deploymentUrl);
-											} else if (e instanceof javax.xml.ws.WebServiceException) {
-												MessageDialog.openError(shell, "Invalid Url",
-														"Not a valid url " + vcp.username);
-											} else
-												e.printStackTrace();
-										}
-									});
-								}
-
-								display.syncExec(new Runnable() {
-									public void run() {
-										// UI changes must be from main thread
-										SyncopeView.this.viewer.refresh();
-									}
-								});
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							return Status.OK_STATUS;
-						}
-					};
-					job.setUser(true);
-					job.schedule();
-
+					updateTreeViewer();
 				}
 			}
 		};
@@ -335,6 +300,87 @@ public class SyncopeView extends ViewPart {
 				showMessage("Double-click detected on " + obj.toString());
 			}
 		};
+
+		addAction = new Action() {
+			public void run() {
+				ISelection selection = viewer.getSelection();
+				TreeParent tp = (TreeParent) ((IStructuredSelection) selection).getFirstElement();
+				Shell shell = viewer.getControl().getShell();
+				AddTemplateDialog addTemplateDialog = new AddTemplateDialog(shell);
+				addTemplateDialog.create();
+				if (addTemplateDialog.open() == Window.OK) {
+					String key = addTemplateDialog.getKey();
+					if (tp.getName().equals("Mail Templates")) {
+						MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
+						MailTemplateTO mtto = new MailTemplateTO();
+						mtto.setKey(key);
+						mailTemplateService.create(mtto);
+					} else if (tp.getName().equals("Report XSLTs")) {
+						ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
+						ReportTemplateTO rtto = new ReportTemplateTO();
+						rtto.setKey(key);
+						reportTemplateService.create(rtto);
+					}
+				}
+				updateTreeViewer();
+			}
+		};
+		addAction.setText("Add template");
+
+		removeAction = new Action() {
+			public void run() {
+				ISelection selection = viewer.getSelection();
+				TreeObject obj = (TreeObject) ((IStructuredSelection) selection).getFirstElement();
+				TreeParent tp = (TreeParent) vcp.getParent(obj);
+				if (tp.getName().equals("Mail Templates")) {
+					MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
+					mailTemplateService.delete(obj.getName());
+				} else if (tp.getName().equals("Report XSLTs")) {
+					ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
+					reportTemplateService.delete(obj.getName());
+				}
+				updateTreeViewer();
+			}
+		};
+		removeAction.setText("Remove template");
+	}
+
+	private void updateTreeViewer() {
+		Display display = Display.getDefault();
+		Job job = new Job("Loading Templates") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					vcp.initialize();
+				} catch (Exception e) {
+					display.syncExec(new Runnable() {
+						public void run() {
+							Shell shell = viewer.getControl().getShell();
+							if (e instanceof java.security.AccessControlException) {
+								MessageDialog.openError(shell, "Incorrect Credentials",
+										"Unable to authenticate " + vcp.username);
+							} else if (e instanceof javax.ws.rs.ProcessingException) {
+								MessageDialog.openError(shell, "Incorrect Url",
+										"Unable to find syncope at " + vcp.deploymentUrl);
+							} else if (e instanceof javax.xml.ws.WebServiceException) {
+								MessageDialog.openError(shell, "Invalid Url", "Not a valid url " + vcp.username);
+							} else
+								e.printStackTrace();
+						}
+					});
+				} finally {
+					display.syncExec(new Runnable() {
+						public void run() {
+							// UI changes must be from main thread
+							SyncopeView.this.viewer.refresh();
+						}
+					});
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		job.setUser(true);
+		job.schedule();
 	}
 
 	private void hookDoubleClickAction() {
