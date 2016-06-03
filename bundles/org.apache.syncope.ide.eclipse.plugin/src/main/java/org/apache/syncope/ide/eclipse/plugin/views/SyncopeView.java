@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.apache.syncope.client.lib.SyncopeClient;
 import org.apache.syncope.client.lib.SyncopeClientFactoryBean;
+import org.apache.syncope.common.lib.SyncopeClientException;
 import org.apache.syncope.common.lib.to.MailTemplateTO;
 import org.apache.syncope.common.lib.to.ReportTemplateTO;
 import org.apache.syncope.common.rest.api.service.MailTemplateService;
@@ -310,19 +311,29 @@ public class SyncopeView extends ViewPart {
 				addTemplateDialog.create();
 				if (addTemplateDialog.open() == Window.OK) {
 					String key = addTemplateDialog.getKey();
-					if (tp.getName().equals("Mail Templates")) {
-						MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
-						MailTemplateTO mtto = new MailTemplateTO();
-						mtto.setKey(key);
-						mailTemplateService.create(mtto);
-					} else if (tp.getName().equals("Report XSLTs")) {
-						ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
-						ReportTemplateTO rtto = new ReportTemplateTO();
-						rtto.setKey(key);
-						reportTemplateService.create(rtto);
+					try {
+						if (tp.getName().equals("Mail Templates")) {
+							MailTemplateService mailTemplateService = syncopeClient
+									.getService(MailTemplateService.class);
+							MailTemplateTO mtto = new MailTemplateTO();
+							mtto.setKey(key);
+							mailTemplateService.create(mtto);
+						} else if (tp.getName().equals("Report XSLTs")) {
+							ReportTemplateService reportTemplateService = syncopeClient
+									.getService(ReportTemplateService.class);
+							ReportTemplateTO rtto = new ReportTemplateTO();
+							rtto.setKey(key);
+							reportTemplateService.create(rtto);
+						}
+						updateTreeViewer();
+					} catch (SyncopeClientException e) {
+						System.out.println(e.toString());
+						if (e.toString().contains("EntityExists")) {
+							MessageDialog.openError(shell, "Template already exists",
+									"A template named " + key + " already exists.");
+						}
 					}
 				}
-				updateTreeViewer();
 			}
 		};
 		addAction.setText("Add template");
