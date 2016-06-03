@@ -17,9 +17,13 @@ Clone the repository to get the project. Run maven clean on the directory using 
 
     mvn clean verify
 
-Set the workspace to the bundles/ directory in the cloned repository and add the project stored within it to your workspace.
+Set the workspace to the bundles/ directory in the cloned repository and add the project stored within it to your workspace and build it.
 
 Right Click in Project Explorer > Import > General > Existing Projects into Workspace
+
+Ensure that **Project > Build Automatically** is checked
+
+Click on **Project > Clean**
 
 ## Running the plugin ##
 Eclipse provides the functionality of running a separate instance of eclipse with the plugin installed in it. This provides us the opportunity to both test and debug our plugin in the eclipse environment away from our current instance of eclipse where the plugin is built.
