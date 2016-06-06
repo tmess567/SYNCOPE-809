@@ -1,7 +1,11 @@
 package org.apache.syncope.ide.eclipse.plugin.views;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.ws.rs.core.Response;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -15,15 +19,19 @@ import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
+import org.apache.commons.io.IOUtils;
 import org.apache.syncope.client.lib.SyncopeClient;
 import org.apache.syncope.client.lib.SyncopeClientFactoryBean;
 import org.apache.syncope.common.lib.SyncopeClientException;
 import org.apache.syncope.common.lib.to.MailTemplateTO;
 import org.apache.syncope.common.lib.to.ReportTemplateTO;
+import org.apache.syncope.common.lib.types.MailTemplateFormat;
+import org.apache.syncope.common.lib.types.ReportTemplateFormat;
 import org.apache.syncope.common.rest.api.service.MailTemplateService;
 import org.apache.syncope.common.rest.api.service.ReportTemplateService;
 import org.apache.syncope.ide.eclipse.plugin.dialogs.AddTemplateDialog;
 import org.apache.syncope.ide.eclipse.plugin.dialogs.LoginDialog;
+import org.apache.syncope.ide.eclipse.plugin.editors.TextEditor;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -43,6 +51,7 @@ public class SyncopeView extends ViewPart {
 	private Action loginAction;
 	private Action doubleClickAction;
 	private Action addAction;
+	private Action readAction;
 	private Action removeAction;
 
 	class TreeObject implements IAdaptable {
@@ -260,6 +269,7 @@ public class SyncopeView extends ViewPart {
 		if (obj instanceof TreeParent) {
 			manager.add(addAction);
 		} else {
+			manager.add(readAction);
 			manager.add(removeAction);
 		}
 
@@ -298,9 +308,24 @@ public class SyncopeView extends ViewPart {
 			public void run() {
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				showMessage("Double-click detected on " + obj.toString());
+				if(!(obj instanceof TreeParent)){
+					//TreeParent is a TreeObject
+					openTemplateInEditor((TreeObject)obj);
+				}
+				else{
+					
+				}
 			}
 		};
+
+		readAction = new Action() {
+			public void run() {
+				ISelection selection = viewer.getSelection();
+				TreeObject obj = (TreeObject) ((IStructuredSelection) selection).getFirstElement();
+				openTemplateInEditor(obj);
+			}
+		};
+		readAction.setText("View template");
 
 		addAction = new Action() {
 			public void run() {
@@ -354,6 +379,28 @@ public class SyncopeView extends ViewPart {
 			}
 		};
 		removeAction.setText("Remove template");
+	}
+
+	protected void openTemplateInEditor(TreeObject obj) {
+		TreeParent tp = (TreeParent) vcp.getParent(obj);
+		Response rs = null;
+		if (tp.getName().equals("Mail Templates")) {
+			MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
+			rs = mailTemplateService.getFormat(obj.getName(), MailTemplateFormat.HTML);
+		} else if (tp.getName().equals("Report XSLTs")) {
+			ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
+			rs = reportTemplateService.getFormat(obj.getName(), ReportTemplateFormat.HTML);
+		}
+		try {
+			String templateData = (IOUtils.toString((InputStream) rs.getEntity()));
+			getViewSite().getPage().openEditor(
+					new TextEditor(templateData, obj.toString(), "MailTemplate Editor"),
+					"org.eclipse.ui.DefaultTextEditor");
+		} catch (PartInitException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void updateTreeViewer() {

@@ -5,7 +5,11 @@ Bundle-SymbolicName: org.apache.syncope.ide.eclipse.plugin;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.apache.syncope.ide.eclipse.plugin.Activator
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.core.resources,
+ org.eclipse.ui.ide
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: target/lib/asm-5.0.4.jar,
@@ -41,4 +45,5 @@ Bundle-ClassPath: target/lib/asm-5.0.4.jar,
  target/lib/woodstox-core-asl-4.4.1.jar,
  target/lib/wsdl4j-1.6.3.jar,
  target/lib/xmlschema-core-2.2.1.jar,
- .
+ .,
+ target/lib/commons-io-1.3.2.jar
