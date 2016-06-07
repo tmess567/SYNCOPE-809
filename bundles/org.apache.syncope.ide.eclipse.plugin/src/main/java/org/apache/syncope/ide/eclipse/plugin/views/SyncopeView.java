@@ -31,7 +31,8 @@ import org.apache.syncope.common.rest.api.service.MailTemplateService;
 import org.apache.syncope.common.rest.api.service.ReportTemplateService;
 import org.apache.syncope.ide.eclipse.plugin.dialogs.AddTemplateDialog;
 import org.apache.syncope.ide.eclipse.plugin.dialogs.LoginDialog;
-import org.apache.syncope.ide.eclipse.plugin.editors.TextEditor;
+import org.apache.syncope.ide.eclipse.plugin.editors.TemplateEditor;
+import org.apache.syncope.ide.eclipse.plugin.editors.TemplateEditorInput;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -40,9 +41,6 @@ import org.eclipse.core.runtime.jobs.Job;
 
 public class SyncopeView extends ViewPart {
 
-	/**
-	 * The ID of the view as specified by the extension.
-	 */
 	public static final String ID = "org.apache.syncope.ide.eclipse.plugin.views.SyncopeView";
 
 	private TreeViewer viewer;
@@ -173,7 +171,6 @@ public class SyncopeView extends ViewPart {
 
 				syncopeClient = new SyncopeClientFactoryBean().setAddress(this.deploymentUrl).create(this.username,
 						this.password);
-				// Adding mailTemplates to View
 				MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
 				List<MailTemplateTO> mailTemplateTOs = mailTemplateService.list();
 
@@ -182,7 +179,6 @@ public class SyncopeView extends ViewPart {
 					p1.addChild(obj);
 				}
 				invisibleRoot.addChild(p1);
-				// Adding reportTemplates to View
 				ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 				List<ReportTemplateTO> reportTemplateTOs = reportTemplateService.list();
 
@@ -212,16 +208,6 @@ public class SyncopeView extends ViewPart {
 	class NameSorter extends ViewerSorter {
 	}
 
-	/**
-	 * The constructor.
-	 */
-	public SyncopeView() {
-	}
-
-	/**
-	 * This is a callback that will allow us to create the viewer and initialize
-	 * it.
-	 */
 	public void createPartControl(Composite parent) {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		vcp = new ViewContentProvider();
@@ -308,12 +294,11 @@ public class SyncopeView extends ViewPart {
 			public void run() {
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				if(!(obj instanceof TreeParent)){
-					//TreeParent is a TreeObject
-					openTemplateInEditor((TreeObject)obj);
-				}
-				else{
-					
+				if (!(obj instanceof TreeParent)) {
+					// TreeParent is a TreeObject
+					openTemplateInEditor((TreeObject) obj);
+				} else {
+
 				}
 			}
 		};
@@ -376,6 +361,8 @@ public class SyncopeView extends ViewPart {
 					reportTemplateService.delete(obj.getName());
 				}
 				updateTreeViewer();
+				MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
+				System.out.println(mailTemplateService.getFormat(obj.getName(), MailTemplateFormat.HTML));
 			}
 		};
 		removeAction.setText("Remove template");
@@ -383,23 +370,79 @@ public class SyncopeView extends ViewPart {
 
 	protected void openTemplateInEditor(TreeObject obj) {
 		TreeParent tp = (TreeParent) vcp.getParent(obj);
-		Response rs = null;
 		if (tp.getName().equals("Mail Templates")) {
 			MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
-			rs = mailTemplateService.getFormat(obj.getName(), MailTemplateFormat.HTML);
+			final String[] templateData = new String[2];
+			String[] editorTitles = { "HTML", "TEXT" };
+			String[] editorToolTips = { obj.getName(), obj.getName() };
+			Job job = new Job("Loading Template Data") {
+				@Override
+				protected IStatus run(IProgressMonitor arg0) {
+					try {
+						templateData[0] = (IOUtils.toString((InputStream)
+								(mailTemplateService.getFormat(obj.getName(), MailTemplateFormat.HTML))
+								.getEntity()));
+						templateData[1] = (IOUtils.toString((InputStream)
+								(mailTemplateService.getFormat(obj.getName(), MailTemplateFormat.TEXT))
+								.getEntity()));
+						Display.getDefault().syncExec(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									getViewSite().getPage().openEditor(new TemplateEditorInput(templateData, editorTitles, editorToolTips),
+											TemplateEditor.ID);
+								} catch (PartInitException e) {
+									e.printStackTrace();
+								}
+							}
+						});
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return Status.OK_STATUS;
+				}
+			};
+			job.setUser(true);
+			job.schedule();
+			
 		} else if (tp.getName().equals("Report XSLTs")) {
 			ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
-			rs = reportTemplateService.getFormat(obj.getName(), ReportTemplateFormat.HTML);
-		}
-		try {
-			String templateData = (IOUtils.toString((InputStream) rs.getEntity()));
-			getViewSite().getPage().openEditor(
-					new TextEditor(templateData, obj.toString(), "MailTemplate Editor"),
-					"org.eclipse.ui.DefaultTextEditor");
-		} catch (PartInitException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+			final String[] templateData = new String[3];
+			String[] editorTitles = { "CSV", "FO", "HTML" };
+			String[] editorToolTips = { obj.getName(), obj.getName(), obj.getName() };
+			Job job = new Job("Loading Template Data") {
+				@Override
+				protected IStatus run(IProgressMonitor arg0) {
+					try {
+						templateData[0] = (IOUtils.toString((InputStream)
+								(reportTemplateService.getFormat(obj.getName(), ReportTemplateFormat.CSV))
+								.getEntity()));
+						templateData[1] = (IOUtils.toString((InputStream)
+								(reportTemplateService.getFormat(obj.getName(), ReportTemplateFormat.FO))
+								.getEntity()));
+						templateData[2] = (IOUtils.toString((InputStream)
+								(reportTemplateService.getFormat(obj.getName(), ReportTemplateFormat.HTML))
+								.getEntity()));
+						Display.getDefault().syncExec(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									getViewSite().getPage().openEditor(new TemplateEditorInput(templateData, editorTitles, editorToolTips),
+											TemplateEditor.ID);
+								} catch (PartInitException e) {
+									e.printStackTrace();
+								}
+							}
+						});
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return Status.OK_STATUS;
+				}
+			};
+			job.setUser(true);
+			job.schedule();
 		}
 	}
 
@@ -449,13 +492,6 @@ public class SyncopeView extends ViewPart {
 		});
 	}
 
-	private void showMessage(String message) {
-		MessageDialog.openInformation(viewer.getControl().getShell(), "Syncope Templates", message);
-	}
-
-	/**
-	 * Passing the focus request to the viewer's control.
-	 */
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}

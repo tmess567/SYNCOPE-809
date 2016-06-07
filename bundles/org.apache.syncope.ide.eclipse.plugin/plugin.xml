@@ -34,8 +34,12 @@
             file="contexts.xml">
       </contexts>
    </extension>
-   <extension
-         point="org.eclipse.ui.editors">
+   <extension point="org.eclipse.ui.editors">
+   	<editor id="org.apache.syncope.ide.eclipse.plugin.editors.TemplateEditor"
+         name="Template Editor"
+         icon="src/main/resources/icons/syncope.png"
+         class="org.apache.syncope.ide.eclipse.plugin.editors.TemplateEditor"
+      />
    </extension>
 
 </plugin>

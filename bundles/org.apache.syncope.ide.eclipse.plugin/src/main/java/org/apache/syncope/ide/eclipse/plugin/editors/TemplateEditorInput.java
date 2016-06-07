@@ -11,16 +11,46 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
 
-public class TextEditor implements IStorageEditorInput {
+public class TemplateEditorInput implements IStorageEditorInput {
 
 	private final String inputString;
 	private final String title;
 	private final String tooltip;
+	
+	private String[] inputStringList;
+	private String[] titleList;
+	private String[] tooltipList;
+	
+	public String[] getInputStringList() {
+		return inputStringList;
+	}
 
-	public TextEditor(String inputString, String title, String tooltip) {
+	public String[] getTitleList() {
+		return titleList;
+	}
+
+	public String[] getTooltipList() {
+		return tooltipList;
+	}
+
+	public String getInputString() {
+		return inputString;
+	}
+	
+	public TemplateEditorInput(String inputString, String title, String tooltip) {
 		this.inputString = inputString;
 		this.title = title;
 		this.tooltip = tooltip;
+	}
+	
+	public TemplateEditorInput(String[] inputStringList, String[] titleList, String[] tooltipList){
+		this.inputString = null;
+		this.title = null;
+		this.tooltip = null;
+		
+		this.inputStringList = inputStringList;
+		this.titleList = titleList;
+		this.tooltipList = tooltipList;
 	}
 
 	public boolean exists() {
@@ -63,7 +93,7 @@ public class TextEditor implements IStorageEditorInput {
 			}
 
 			public String getName() {
-				return TextEditor.this.getName();
+				return TemplateEditorInput.this.getName();
 			}
 
 			public boolean isReadOnly() {
