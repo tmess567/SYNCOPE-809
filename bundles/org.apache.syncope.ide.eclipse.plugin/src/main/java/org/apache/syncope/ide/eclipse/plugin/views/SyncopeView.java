@@ -1,11 +1,8 @@
 package org.apache.syncope.ide.eclipse.plugin.views;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.ws.rs.core.Response;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -288,7 +285,7 @@ public class SyncopeView extends ViewPart {
 			}
 		};
 		loginAction.setText("Login");
-		loginAction.setToolTipText("Set Syncope deployment url and login");
+		loginAction.setToolTipText("Set Apache Syncope deployment url and login");
 
 		doubleClickAction = new Action() {
 			public void run() {
@@ -462,7 +459,7 @@ public class SyncopeView extends ViewPart {
 										"Unable to authenticate " + vcp.username);
 							} else if (e instanceof javax.ws.rs.ProcessingException) {
 								MessageDialog.openError(shell, "Incorrect Url",
-										"Unable to find syncope at " + vcp.deploymentUrl);
+										"Unable to find apache syncope at " + vcp.deploymentUrl);
 							} else if (e instanceof javax.xml.ws.WebServiceException) {
 								MessageDialog.openError(shell, "Invalid Url", "Not a valid url " + vcp.username);
 							} else

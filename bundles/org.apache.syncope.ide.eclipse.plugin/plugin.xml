@@ -5,11 +5,11 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="Syncope"
+            name="Apache Syncope"
             id="org.apache.syncope.ide.eclipse.plugin">
       </category>
       <view
-            name="Syncope Templates"
+            name="Apache Syncope Templates"
             icon="src/main/resources/icons/syncope.png"
             category="org.apache.syncope.ide.eclipse.plugin"
             class="org.apache.syncope.ide.eclipse.plugin.views.SyncopeView"

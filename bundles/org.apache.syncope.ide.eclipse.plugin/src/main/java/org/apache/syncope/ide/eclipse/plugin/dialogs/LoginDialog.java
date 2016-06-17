@@ -43,7 +43,7 @@ public class LoginDialog extends TitleAreaDialog {
 	@Override
 	public void create() {
 		super.create();
-		setTitle("Login to Syncope");
+		setTitle("Login to Apache Syncope");
 	}
 
 	// Add Reset button
