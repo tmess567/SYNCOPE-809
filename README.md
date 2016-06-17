@@ -19,20 +19,20 @@ Clone the repository to get the project. Run maven clean on the directory using 
 
 Set the workspace to the bundles/ directory in the cloned repository and add the project stored within it to your workspace and build it.
 
-Right Click in Project Explorer > Import > General > Existing Projects into Workspace
+Right Click in Project Explorer > New > Java Project
 
-Ensure that **Project > Build Automatically** is checked
-
-Click on **Project > Clean**
+When asked, uncheck the default location and set the location to bundles/org.apache.syncope.ide.eclipse.plugin
+![Project Location](http://i.imgur.com/c2dXjBxl.png)
 
 ## Running the plugin ##
 Eclipse provides the functionality of running a separate instance of eclipse with the plugin installed in it. This provides us the opportunity to both test and debug our plugin in the eclipse environment away from our current instance of eclipse where the plugin is built.
 
-Right Click on the project > Run As > Eclipse Application
+Right Click on the project > Run As > Run Configurations > Add Eclipse Application > Run
+![New Eclipse Application](http://i.imgur.com/yn0CQbgl.png)
 
 This will start a new instance of Eclipse with our plugin installed. To view the plugin,
 
-Go to Window > Show View > Other.. > Syncope Category > Syncope View
+Go to Window > Show View > Other.. > Apache Syncope Category > Apache Syncope View
 
 Click on Login and enter details for the syncope deployment
 
