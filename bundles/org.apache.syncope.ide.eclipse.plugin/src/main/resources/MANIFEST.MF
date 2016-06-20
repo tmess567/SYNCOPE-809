@@ -1,0 +1,10 @@
+Manifest-Version: ${Manifest-Version}
+Bundle-ManifestVersion: ${Bundle-ManifestVersion}
+Bundle-Name: ${Bundle-Name}
+Bundle-SymbolicName: ${Bundle-SymbolicName}
+Bundle-Version: ${Bundle-Version}
+Bundle-Activator: ${Bundle-Activator}
+Require-Bundle: ${Require-Bundle}
+Bundle-RequiredExecutionEnvironment: ${Bundle-RequiredExecutionEnvironment}
+Bundle-ActivationPolicy: ${Bundle-ActivationPolicy}
+Bundle-ClassPath: ${Bundle-ClassPath}

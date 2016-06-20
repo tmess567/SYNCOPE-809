@@ -11,6 +11,7 @@ Search for "pde" in the marketplace
 
 Install the Eclipse PDE (Plug-in Development Environment) 3.10 Luna
 (Works on Eclipse Mars2)
+
 ![PDE Installation](http://imgur.com/d7VSJre.png)
 ### Setup project in workspace ###
 Clone the repository to get the project. Run maven clean on the directory using the following command
@@ -22,12 +23,22 @@ Set the workspace to the bundles/ directory in the cloned repository and add the
 Right Click in Project Explorer > New > Java Project
 
 When asked, uncheck the default location and set the location to bundles/org.apache.syncope.ide.eclipse.plugin
+
 ![Project Location](http://i.imgur.com/c2dXjBxl.png)
+
+Add the target directory to the build path
+
+![Target Directory Build Path](http://imgur.com/zivIsUSl.png)
+
+Also add the PDE Plug-in dependencies library to the project
+
+![Plug-in dependencies library](http://imgur.com/b4SevMnl.png)
 
 ## Running the plugin ##
 Eclipse provides the functionality of running a separate instance of eclipse with the plugin installed in it. This provides us the opportunity to both test and debug our plugin in the eclipse environment away from our current instance of eclipse where the plugin is built.
 
 Right Click on the project > Run As > Run Configurations > Add Eclipse Application > Run
+
 ![New Eclipse Application](http://i.imgur.com/yn0CQbgl.png)
 
 This will start a new instance of Eclipse with our plugin installed. To view the plugin,
