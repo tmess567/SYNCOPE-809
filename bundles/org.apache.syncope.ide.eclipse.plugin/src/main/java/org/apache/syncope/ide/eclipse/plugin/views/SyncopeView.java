@@ -164,7 +164,7 @@ public class SyncopeView extends ViewPart {
 			if (this.deploymentUrl != null && !(this.deploymentUrl.equals("")) && this.username != null
 					&& !(this.username.equals("")) && this.password != null && !(this.password.equals(""))) {
 				TreeParent p1 = new TreeParent("Mail Templates");
-				TreeParent p2 = new TreeParent("Report XSLTs");
+				TreeParent p2 = new TreeParent("Report Templates");
 
 				syncopeClient = new SyncopeClientFactoryBean().setAddress(this.deploymentUrl).create(this.username,
 						this.password);
@@ -295,7 +295,7 @@ public class SyncopeView extends ViewPart {
 					// TreeParent is a TreeObject
 					openTemplateInEditor((TreeObject) obj);
 				} else {
-
+					viewer.expandToLevel(obj, 1);
 				}
 			}
 		};
@@ -325,7 +325,7 @@ public class SyncopeView extends ViewPart {
 							MailTemplateTO mtto = new MailTemplateTO();
 							mtto.setKey(key);
 							mailTemplateService.create(mtto);
-						} else if (tp.getName().equals("Report XSLTs")) {
+						} else if (tp.getName().equals("Report Templates")) {
 							ReportTemplateService reportTemplateService = syncopeClient
 									.getService(ReportTemplateService.class);
 							ReportTemplateTO rtto = new ReportTemplateTO();
@@ -353,7 +353,7 @@ public class SyncopeView extends ViewPart {
 				if (tp.getName().equals("Mail Templates")) {
 					MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
 					mailTemplateService.delete(obj.getName());
-				} else if (tp.getName().equals("Report XSLTs")) {
+				} else if (tp.getName().equals("Report Templates")) {
 					ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 					reportTemplateService.delete(obj.getName());
 				}
@@ -403,7 +403,7 @@ public class SyncopeView extends ViewPart {
 			job.setUser(true);
 			job.schedule();
 			
-		} else if (tp.getName().equals("Report XSLTs")) {
+		} else if (tp.getName().equals("Report Templates")) {
 			ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 			final String[] templateData = new String[3];
 			String[] editorTitles = { "CSV", "FO", "HTML" };
