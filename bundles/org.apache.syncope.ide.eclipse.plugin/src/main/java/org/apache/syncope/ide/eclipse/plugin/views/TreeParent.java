@@ -1,13 +1,16 @@
 package org.apache.syncope.ide.eclipse.plugin.views;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.syncope.ide.eclipse.plugin.views.TreeObject;
 
 class TreeParent extends TreeObject {
-	private ArrayList children;
+	private List<TreeObject> children;
 
 	public TreeParent(String name) {
 		super(name);
-		children = new ArrayList();
+		children = new ArrayList<TreeObject>();
 	}
 
 	public void addChild(TreeObject child) {

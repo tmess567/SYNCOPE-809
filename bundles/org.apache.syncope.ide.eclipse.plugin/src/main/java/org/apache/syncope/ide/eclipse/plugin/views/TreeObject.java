@@ -1,8 +1,6 @@
 package org.apache.syncope.ide.eclipse.plugin.views;
 
-import org.eclipse.core.runtime.IAdaptable;
-
-public class TreeObject implements IAdaptable {
+public class TreeObject {
 	private String name;
 	private TreeParent parent;
 
@@ -24,9 +22,5 @@ public class TreeObject implements IAdaptable {
 
 	public String toString() {
 		return getName();
-	}
-
-	public Object getAdapter(Class key) {
-		return null;
 	}
 }

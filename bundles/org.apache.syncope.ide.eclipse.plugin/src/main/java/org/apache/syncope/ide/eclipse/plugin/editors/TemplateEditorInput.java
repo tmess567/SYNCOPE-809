@@ -65,14 +65,14 @@ public class TemplateEditorInput implements IStorageEditorInput {
 		return null;
 	}
 
-	public Object getAdapter(Class adapter) {
+	public <T> T getAdapter(Class <T> adapter) {
 		return null;
 	}
 
 	public String getName() {
 		return title;
 	}
-
+	
 	public String getToolTipText() {
 		return tooltip;
 	}
@@ -99,8 +99,8 @@ public class TemplateEditorInput implements IStorageEditorInput {
 			public boolean isReadOnly() {
 				return false;
 			}
-
-			public Object getAdapter(Class adapter) {
+			
+			public <T> T getAdapter(Class<T> adapter) {
 				return null;
 			}
 		};

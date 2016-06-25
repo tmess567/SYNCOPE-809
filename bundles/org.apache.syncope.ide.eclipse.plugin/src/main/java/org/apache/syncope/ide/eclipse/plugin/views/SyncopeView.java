@@ -1,7 +1,6 @@
 package org.apache.syncope.ide.eclipse.plugin.views;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.widgets.Composite;
@@ -30,7 +29,6 @@ import org.apache.syncope.ide.eclipse.plugin.dialogs.AddTemplateDialog;
 import org.apache.syncope.ide.eclipse.plugin.dialogs.LoginDialog;
 import org.apache.syncope.ide.eclipse.plugin.editors.TemplateEditor;
 import org.apache.syncope.ide.eclipse.plugin.editors.TemplateEditorInput;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -48,62 +46,9 @@ public class SyncopeView extends ViewPart {
 	private Action addAction;
 	private Action readAction;
 	private Action removeAction;
-
-	class TreeObject implements IAdaptable {
-		private String name;
-		private TreeParent parent;
-
-		public TreeObject(String name) {
-			this.name = name;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setParent(TreeParent parent) {
-			this.parent = parent;
-		}
-
-		public TreeParent getParent() {
-			return parent;
-		}
-
-		public String toString() {
-			return getName();
-		}
-
-		public Object getAdapter(Class key) {
-			return null;
-		}
-	}
-
-	class TreeParent extends TreeObject {
-		private ArrayList children;
-
-		public TreeParent(String name) {
-			super(name);
-			children = new ArrayList();
-		}
-
-		public void addChild(TreeObject child) {
-			children.add(child);
-			child.setParent(this);
-		}
-
-		public void removeChild(TreeObject child) {
-			children.remove(child);
-			child.setParent(null);
-		}
-
-		public TreeObject[] getChildren() {
-			return (TreeObject[]) children.toArray(new TreeObject[children.size()]);
-		}
-
-		public boolean hasChildren() {
-			return children.size() > 0;
-		}
-	}
+	
+	private final String mailTemplateLabel = "Mail Templates";
+	private final String reportTemplateLabel = "Report Templates";
 
 	class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 		private TreeParent invisibleRoot;
@@ -163,8 +108,8 @@ public class SyncopeView extends ViewPart {
 
 			if (this.deploymentUrl != null && !(this.deploymentUrl.equals("")) && this.username != null
 					&& !(this.username.equals("")) && this.password != null && !(this.password.equals(""))) {
-				TreeParent p1 = new TreeParent("Mail Templates");
-				TreeParent p2 = new TreeParent("Report Templates");
+				TreeParent p1 = new TreeParent(mailTemplateLabel);
+				TreeParent p2 = new TreeParent(reportTemplateLabel);
 
 				syncopeClient = new SyncopeClientFactoryBean().setAddress(this.deploymentUrl).create(this.username,
 						this.password);
@@ -319,13 +264,13 @@ public class SyncopeView extends ViewPart {
 				if (addTemplateDialog.open() == Window.OK) {
 					String key = addTemplateDialog.getKey();
 					try {
-						if (tp.getName().equals("Mail Templates")) {
+						if (tp.getName().equals(mailTemplateLabel)) {
 							MailTemplateService mailTemplateService = syncopeClient
 									.getService(MailTemplateService.class);
 							MailTemplateTO mtto = new MailTemplateTO();
 							mtto.setKey(key);
 							mailTemplateService.create(mtto);
-						} else if (tp.getName().equals("Report Templates")) {
+						} else if (tp.getName().equals(reportTemplateLabel)) {
 							ReportTemplateService reportTemplateService = syncopeClient
 									.getService(ReportTemplateService.class);
 							ReportTemplateTO rtto = new ReportTemplateTO();
@@ -350,10 +295,10 @@ public class SyncopeView extends ViewPart {
 				ISelection selection = viewer.getSelection();
 				TreeObject obj = (TreeObject) ((IStructuredSelection) selection).getFirstElement();
 				TreeParent tp = (TreeParent) vcp.getParent(obj);
-				if (tp.getName().equals("Mail Templates")) {
+				if (tp.getName().equals(mailTemplateLabel)) {
 					MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
 					mailTemplateService.delete(obj.getName());
-				} else if (tp.getName().equals("Report Templates")) {
+				} else if (tp.getName().equals(reportTemplateLabel)) {
 					ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 					reportTemplateService.delete(obj.getName());
 				}
@@ -367,7 +312,7 @@ public class SyncopeView extends ViewPart {
 
 	protected void openTemplateInEditor(TreeObject obj) {
 		TreeParent tp = (TreeParent) vcp.getParent(obj);
-		if (tp.getName().equals("Mail Templates")) {
+		if (tp.getName().equals(mailTemplateLabel)) {
 			MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
 			final String[] templateData = new String[2];
 			String[] editorTitles = { "HTML", "TEXT" };
@@ -403,7 +348,7 @@ public class SyncopeView extends ViewPart {
 			job.setUser(true);
 			job.schedule();
 			
-		} else if (tp.getName().equals("Report Templates")) {
+		} else if (tp.getName().equals(reportTemplateLabel)) {
 			ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 			final String[] templateData = new String[3];
 			String[] editorTitles = { "CSV", "FO", "HTML" };
