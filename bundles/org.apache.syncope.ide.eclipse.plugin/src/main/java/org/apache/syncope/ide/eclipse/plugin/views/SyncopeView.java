@@ -47,9 +47,21 @@ public class SyncopeView extends ViewPart {
 	private Action readAction;
 	private Action removeAction;
 	
-	private final String mailTemplateLabel = "Mail Templates";
-	private final String reportTemplateLabel = "Report Templates";
-
+	private static final String MAIL_TEMPLATE_LABEL = "Mail Templates";
+	private static final String REPORT_TEMPLATE_LABEL = "Report Templates";
+	private static final String LOGIN_ACTION_TEXT = "Login";
+	private static final String LOGIN_ACTION_TOOLTIP_TEXT = "Set Apache Syncope deployment url and login";
+	private static final String READ_ACTION_TEXT = "View Template";
+	private static final String ADD_ACTION_TEXT = "Add Template";
+	private static final String REMOVE_ACTION_TEXT = "Remove template";
+	private static final String TEMPLATE_FORMAT_HTML = "Add Template";
+	private static final String TEMPLATE_FORMAT_CSV = "Add Template";
+	private static final String TEMPLATE_FORMAT_FO = "Add Template";
+	private static final String TEMPLATE_FORMAT_TEXT = "Add Template";
+	private static final String LOADING_TEMPLATE_FORMAT_LABEL = "Loading template data";
+	private static final String LOADING_TEMPLATE_LABEL = "Loading Templates";
+	private static final String HELP_TEXT = "org.apache.syncope.ide.eclipse.plugin.viewer";
+	
 	class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 		private TreeParent invisibleRoot;
 		private String deploymentUrl;
@@ -108,8 +120,8 @@ public class SyncopeView extends ViewPart {
 
 			if (this.deploymentUrl != null && !(this.deploymentUrl.equals("")) && this.username != null
 					&& !(this.username.equals("")) && this.password != null && !(this.password.equals(""))) {
-				TreeParent p1 = new TreeParent(mailTemplateLabel);
-				TreeParent p2 = new TreeParent(reportTemplateLabel);
+				TreeParent p1 = new TreeParent(MAIL_TEMPLATE_LABEL);
+				TreeParent p2 = new TreeParent(REPORT_TEMPLATE_LABEL);
 
 				syncopeClient = new SyncopeClientFactoryBean().setAddress(this.deploymentUrl).create(this.username,
 						this.password);
@@ -159,8 +171,7 @@ public class SyncopeView extends ViewPart {
 		viewer.setInput(getViewSite());
 
 		// Create the help context id for the viewer's control
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(),
-				"org.apache.syncope.ide.eclipse.plugin.viewer");
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), HELP_TEXT);
 		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
@@ -200,8 +211,6 @@ public class SyncopeView extends ViewPart {
 			manager.add(readAction);
 			manager.add(removeAction);
 		}
-
-		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
 
@@ -229,15 +238,14 @@ public class SyncopeView extends ViewPart {
 				}
 			}
 		};
-		loginAction.setText("Login");
-		loginAction.setToolTipText("Set Apache Syncope deployment url and login");
+		loginAction.setText(LOGIN_ACTION_TEXT);
+		loginAction.setToolTipText(LOGIN_ACTION_TOOLTIP_TEXT);
 
 		doubleClickAction = new Action() {
 			public void run() {
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection) selection).getFirstElement();
 				if (!(obj instanceof TreeParent)) {
-					// TreeParent is a TreeObject
 					openTemplateInEditor((TreeObject) obj);
 				} else {
 					viewer.expandToLevel(obj, 1);
@@ -252,7 +260,7 @@ public class SyncopeView extends ViewPart {
 				openTemplateInEditor(obj);
 			}
 		};
-		readAction.setText("View template");
+		readAction.setText(READ_ACTION_TEXT);
 
 		addAction = new Action() {
 			public void run() {
@@ -264,13 +272,13 @@ public class SyncopeView extends ViewPart {
 				if (addTemplateDialog.open() == Window.OK) {
 					String key = addTemplateDialog.getKey();
 					try {
-						if (tp.getName().equals(mailTemplateLabel)) {
+						if (tp.getName().equals(MAIL_TEMPLATE_LABEL)) {
 							MailTemplateService mailTemplateService = syncopeClient
 									.getService(MailTemplateService.class);
 							MailTemplateTO mtto = new MailTemplateTO();
 							mtto.setKey(key);
 							mailTemplateService.create(mtto);
-						} else if (tp.getName().equals(reportTemplateLabel)) {
+						} else if (tp.getName().equals(REPORT_TEMPLATE_LABEL)) {
 							ReportTemplateService reportTemplateService = syncopeClient
 									.getService(ReportTemplateService.class);
 							ReportTemplateTO rtto = new ReportTemplateTO();
@@ -279,7 +287,6 @@ public class SyncopeView extends ViewPart {
 						}
 						updateTreeViewer();
 					} catch (SyncopeClientException e) {
-						System.out.println(e.toString());
 						if (e.toString().contains("EntityExists")) {
 							MessageDialog.openError(shell, "Template already exists",
 									"A template named " + key + " already exists.");
@@ -288,36 +295,34 @@ public class SyncopeView extends ViewPart {
 				}
 			}
 		};
-		addAction.setText("Add template");
+		addAction.setText(ADD_ACTION_TEXT);
 
 		removeAction = new Action() {
 			public void run() {
 				ISelection selection = viewer.getSelection();
 				TreeObject obj = (TreeObject) ((IStructuredSelection) selection).getFirstElement();
 				TreeParent tp = (TreeParent) vcp.getParent(obj);
-				if (tp.getName().equals(mailTemplateLabel)) {
+				if (tp.getName().equals(MAIL_TEMPLATE_LABEL)) {
 					MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
 					mailTemplateService.delete(obj.getName());
-				} else if (tp.getName().equals(reportTemplateLabel)) {
+				} else if (tp.getName().equals(REPORT_TEMPLATE_LABEL)) {
 					ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 					reportTemplateService.delete(obj.getName());
 				}
 				updateTreeViewer();
-				MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
-				System.out.println(mailTemplateService.getFormat(obj.getName(), MailTemplateFormat.HTML));
 			}
 		};
-		removeAction.setText("Remove template");
+		removeAction.setText(REMOVE_ACTION_TEXT);
 	}
 
 	protected void openTemplateInEditor(TreeObject obj) {
 		TreeParent tp = (TreeParent) vcp.getParent(obj);
-		if (tp.getName().equals(mailTemplateLabel)) {
+		if (tp.getName().equals(MAIL_TEMPLATE_LABEL)) {
 			MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
 			final String[] templateData = new String[2];
-			String[] editorTitles = { "HTML", "TEXT" };
+			String[] editorTitles = { TEMPLATE_FORMAT_HTML, TEMPLATE_FORMAT_TEXT };
 			String[] editorToolTips = { obj.getName(), obj.getName() };
-			Job job = new Job("Loading Template Data") {
+			Job job = new Job(LOADING_TEMPLATE_FORMAT_LABEL) {
 				@Override
 				protected IStatus run(IProgressMonitor arg0) {
 					try {
@@ -348,12 +353,12 @@ public class SyncopeView extends ViewPart {
 			job.setUser(true);
 			job.schedule();
 			
-		} else if (tp.getName().equals(reportTemplateLabel)) {
+		} else if (tp.getName().equals(REPORT_TEMPLATE_LABEL)) {
 			ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 			final String[] templateData = new String[3];
-			String[] editorTitles = { "CSV", "FO", "HTML" };
+			String[] editorTitles = { TEMPLATE_FORMAT_CSV, TEMPLATE_FORMAT_FO, TEMPLATE_FORMAT_HTML };
 			String[] editorToolTips = { obj.getName(), obj.getName(), obj.getName() };
-			Job job = new Job("Loading Template Data") {
+			Job job = new Job(LOADING_TEMPLATE_FORMAT_LABEL) {
 				@Override
 				protected IStatus run(IProgressMonitor arg0) {
 					try {
@@ -390,7 +395,7 @@ public class SyncopeView extends ViewPart {
 
 	private void updateTreeViewer() {
 		Display display = Display.getDefault();
-		Job job = new Job("Loading Templates") {
+		Job job = new Job(LOADING_TEMPLATE_LABEL) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
@@ -414,7 +419,6 @@ public class SyncopeView extends ViewPart {
 				} finally {
 					display.syncExec(new Runnable() {
 						public void run() {
-							// UI changes must be from main thread
 							SyncopeView.this.viewer.refresh();
 						}
 					});
