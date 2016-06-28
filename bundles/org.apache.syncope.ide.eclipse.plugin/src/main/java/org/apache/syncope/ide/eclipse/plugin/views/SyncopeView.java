@@ -54,10 +54,10 @@ public class SyncopeView extends ViewPart {
 	private static final String READ_ACTION_TEXT = "View Template";
 	private static final String ADD_ACTION_TEXT = "Add Template";
 	private static final String REMOVE_ACTION_TEXT = "Remove template";
-	private static final String TEMPLATE_FORMAT_HTML = "Add Template";
-	private static final String TEMPLATE_FORMAT_CSV = "Add Template";
-	private static final String TEMPLATE_FORMAT_FO = "Add Template";
-	private static final String TEMPLATE_FORMAT_TEXT = "Add Template";
+	private static final String TEMPLATE_FORMAT_HTML = "HTML";
+	private static final String TEMPLATE_FORMAT_CSV = "CSV";
+	private static final String TEMPLATE_FORMAT_FO = "FO";
+	private static final String TEMPLATE_FORMAT_TEXT = "TEXT";
 	private static final String LOADING_TEMPLATE_FORMAT_LABEL = "Loading template data";
 	private static final String LOADING_TEMPLATE_LABEL = "Loading Templates";
 	private static final String HELP_TEXT = "org.apache.syncope.ide.eclipse.plugin.viewer";
