@@ -1,8 +1,8 @@
 package org.apache.syncope.ide.eclipse.plugin.views;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Scanner;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -16,7 +16,6 @@ import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
-import org.apache.commons.io.IOUtils;
 import org.apache.syncope.client.lib.SyncopeClient;
 import org.apache.syncope.client.lib.SyncopeClientFactoryBean;
 import org.apache.syncope.common.lib.SyncopeClientException;
@@ -61,7 +60,7 @@ public class SyncopeView extends ViewPart {
 	private static final String REMOVE_ACTION_TEXT = "Remove template";
 	private static final String TEMPLATE_FORMAT_HTML = "HTML";
 	private static final String TEMPLATE_FORMAT_CSV = "CSV";
-	private static final String TEMPLATE_FORMAT_FO = "FO";
+	private static final String TEMPLATE_FORMAT_XSLT = "XSLT";
 	private static final String TEMPLATE_FORMAT_TEXT = "TEXT";
 	private static final String LOADING_TEMPLATE_FORMAT_LABEL = "Loading template data";
 	private static final String LOADING_TEMPLATE_LABEL = "Loading Templates";
@@ -353,16 +352,20 @@ public class SyncopeView extends ViewPart {
 					});
 					return Status.OK_STATUS;
 				}
-				private String getStringFromTemplate(MailTemplateService reportTemplateService, String name, MailTemplateFormat format) {
+				private String getStringFromTemplate(MailTemplateService mailTemplateService, String name, MailTemplateFormat format) {
 					try {
-						return (IOUtils.toString((InputStream) (reportTemplateService.getFormat(name, format)) .getEntity()));
+						InputStream inpstream = (InputStream) (mailTemplateService.getFormat(name, format)) .getEntity();
+						Scanner sc = new Scanner(inpstream);
+						String templateContent = sc.nextLine();
+						while(sc.hasNext())
+							templateContent += "\n" + sc.nextLine();
+						sc.close();
+						return (templateContent);
 					} catch (SyncopeClientException e) {
 			            if(ClientExceptionType.NotFound.equals(e.getType())){
 			            	return "";
 			            }
-			        } catch (IOException e) {
-						e.printStackTrace();
-					}
+			        }
 					return null;
 				}
 			};
@@ -372,7 +375,7 @@ public class SyncopeView extends ViewPart {
 		} else if (tp.getName().equals(REPORT_TEMPLATE_LABEL)) {
 			ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 			final String[] templateData = new String[3];
-			String[] editorTitles = { TEMPLATE_FORMAT_CSV, TEMPLATE_FORMAT_FO, TEMPLATE_FORMAT_HTML };
+			String[] editorTitles = { TEMPLATE_FORMAT_CSV, TEMPLATE_FORMAT_XSLT, TEMPLATE_FORMAT_HTML };
 			String[] editorToolTips = { obj.getName(), obj.getName(), obj.getName() };
 			Job job = new Job(LOADING_TEMPLATE_FORMAT_LABEL) {
 				@Override
@@ -395,14 +398,18 @@ public class SyncopeView extends ViewPart {
 				}
 				private String getStringFromTemplate(ReportTemplateService reportTemplateService, String name, ReportTemplateFormat format) {
 					try {
-						return (IOUtils.toString((InputStream) (reportTemplateService.getFormat(name, format)) .getEntity()));
+						InputStream inpstream = (InputStream) (reportTemplateService.getFormat(name, format)) .getEntity();
+						Scanner sc = new Scanner(inpstream);
+						String templateContent = sc.nextLine();
+						while(sc.hasNext())
+							templateContent += "\n" + sc.nextLine();
+						sc.close();
+						return (templateContent);
 					} catch (SyncopeClientException e) {
 			            if(ClientExceptionType.NotFound.equals(e.getType())){
 			            	return "";
 			            }
-			        } catch (IOException e) {
-						e.printStackTrace();
-					}
+			        }
 					return null;
 				}
 			};
