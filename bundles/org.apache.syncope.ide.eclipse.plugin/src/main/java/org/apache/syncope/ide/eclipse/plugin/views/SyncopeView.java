@@ -1,5 +1,6 @@
 package org.apache.syncope.ide.eclipse.plugin.views;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -21,6 +22,7 @@ import org.apache.syncope.client.lib.SyncopeClientFactoryBean;
 import org.apache.syncope.common.lib.SyncopeClientException;
 import org.apache.syncope.common.lib.to.MailTemplateTO;
 import org.apache.syncope.common.lib.to.ReportTemplateTO;
+import org.apache.syncope.common.lib.types.ClientExceptionType;
 import org.apache.syncope.common.lib.types.MailTemplateFormat;
 import org.apache.syncope.common.lib.types.ReportTemplateFormat;
 import org.apache.syncope.common.rest.api.service.MailTemplateService;
@@ -42,6 +44,7 @@ public class SyncopeView extends ViewPart {
 	public ViewContentProvider vcp;
 	private SyncopeClient syncopeClient;
 	private Action loginAction;
+	private Action refreshAction;
 	private Action doubleClickAction;
 	private Action addAction;
 	private Action readAction;
@@ -51,6 +54,8 @@ public class SyncopeView extends ViewPart {
 	private static final String REPORT_TEMPLATE_LABEL = "Report Templates";
 	private static final String LOGIN_ACTION_TEXT = "Login";
 	private static final String LOGIN_ACTION_TOOLTIP_TEXT = "Set Apache Syncope deployment url and login";
+	private static final String REFRESH_ACTION_TEXT = "Refresh";
+	private static final String REFRESH_ACTION_TOOLTIP_TEXT = "Refresh the template listings";
 	private static final String READ_ACTION_TEXT = "View Template";
 	private static final String ADD_ACTION_TEXT = "Add Template";
 	private static final String REMOVE_ACTION_TEXT = "Remove template";
@@ -211,12 +216,12 @@ public class SyncopeView extends ViewPart {
 			manager.add(readAction);
 			manager.add(removeAction);
 		}
-		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
 
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(loginAction);
-		manager.add(new Separator());
+		refreshAction.setEnabled(false);
+		manager.add(refreshAction);
 	}
 
 	private void makeActions() {
@@ -240,6 +245,14 @@ public class SyncopeView extends ViewPart {
 		};
 		loginAction.setText(LOGIN_ACTION_TEXT);
 		loginAction.setToolTipText(LOGIN_ACTION_TOOLTIP_TEXT);
+		
+		refreshAction = new Action() {
+			public void run() {
+				updateTreeViewer();
+			}
+		};
+		refreshAction.setText(REFRESH_ACTION_TEXT);
+		refreshAction.setToolTipText(REFRESH_ACTION_TOOLTIP_TEXT);
 
 		doubleClickAction = new Action() {
 			public void run() {
@@ -325,29 +338,32 @@ public class SyncopeView extends ViewPart {
 			Job job = new Job(LOADING_TEMPLATE_FORMAT_LABEL) {
 				@Override
 				protected IStatus run(IProgressMonitor arg0) {
-					try {
-						templateData[0] = (IOUtils.toString((InputStream)
-								(mailTemplateService.getFormat(obj.getName(), MailTemplateFormat.HTML))
-								.getEntity()));
-						templateData[1] = (IOUtils.toString((InputStream)
-								(mailTemplateService.getFormat(obj.getName(), MailTemplateFormat.TEXT))
-								.getEntity()));
-						Display.getDefault().syncExec(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									getViewSite().getPage().openEditor(new TemplateEditorInput(templateData, editorTitles, editorToolTips),
-											TemplateEditor.ID);
-								} catch (PartInitException e) {
-									e.printStackTrace();
-								}
+					templateData[0] = getStringFromTemplate(mailTemplateService, obj.getName(), MailTemplateFormat.HTML);
+					templateData[1] = getStringFromTemplate(mailTemplateService, obj.getName(), MailTemplateFormat.TEXT);
+					Display.getDefault().syncExec(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								getViewSite().getPage().openEditor(new TemplateEditorInput(templateData, editorTitles, editorToolTips),
+										TemplateEditor.ID);
+							} catch (PartInitException e) {
+								e.printStackTrace();
 							}
-						});
-						
-					} catch (Exception e) {
+						}
+					});
+					return Status.OK_STATUS;
+				}
+				private String getStringFromTemplate(MailTemplateService reportTemplateService, String name, MailTemplateFormat format) {
+					try {
+						return (IOUtils.toString((InputStream) (reportTemplateService.getFormat(name, format)) .getEntity()));
+					} catch (SyncopeClientException e) {
+			            if(ClientExceptionType.NotFound.equals(e.getType())){
+			            	return "";
+			            }
+			        } catch (IOException e) {
 						e.printStackTrace();
 					}
-					return Status.OK_STATUS;
+					return null;
 				}
 			};
 			job.setUser(true);
@@ -361,38 +377,40 @@ public class SyncopeView extends ViewPart {
 			Job job = new Job(LOADING_TEMPLATE_FORMAT_LABEL) {
 				@Override
 				protected IStatus run(IProgressMonitor arg0) {
-					try {
-						templateData[0] = (IOUtils.toString((InputStream)
-								(reportTemplateService.getFormat(obj.getName(), ReportTemplateFormat.CSV))
-								.getEntity()));
-						templateData[1] = (IOUtils.toString((InputStream)
-								(reportTemplateService.getFormat(obj.getName(), ReportTemplateFormat.FO))
-								.getEntity()));
-						templateData[2] = (IOUtils.toString((InputStream)
-								(reportTemplateService.getFormat(obj.getName(), ReportTemplateFormat.HTML))
-								.getEntity()));
-						Display.getDefault().syncExec(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									getViewSite().getPage().openEditor(new TemplateEditorInput(templateData, editorTitles, editorToolTips),
-											TemplateEditor.ID);
-								} catch (PartInitException e) {
-									e.printStackTrace();
-								}
+					templateData[0] = getStringFromTemplate(reportTemplateService, obj.getName(), ReportTemplateFormat.CSV);
+					templateData[1] = getStringFromTemplate(reportTemplateService, obj.getName(), ReportTemplateFormat.FO);
+					templateData[2] = getStringFromTemplate(reportTemplateService, obj.getName(), ReportTemplateFormat.HTML);
+					Display.getDefault().syncExec(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								getViewSite().getPage().openEditor(new TemplateEditorInput(templateData, editorTitles, editorToolTips),
+										TemplateEditor.ID);
+							} catch (PartInitException e) {
+								e.printStackTrace();
 							}
-						});
-					} catch (Exception e) {
+						}
+					});
+					return Status.OK_STATUS;
+				}
+				private String getStringFromTemplate(ReportTemplateService reportTemplateService, String name, ReportTemplateFormat format) {
+					try {
+						return (IOUtils.toString((InputStream) (reportTemplateService.getFormat(name, format)) .getEntity()));
+					} catch (SyncopeClientException e) {
+			            if(ClientExceptionType.NotFound.equals(e.getType())){
+			            	return "";
+			            }
+			        } catch (IOException e) {
 						e.printStackTrace();
 					}
-					return Status.OK_STATUS;
+					return null;
 				}
 			};
 			job.setUser(true);
 			job.schedule();
 		}
 	}
-
+	
 	private void updateTreeViewer() {
 		Display display = Display.getDefault();
 		Job job = new Job(LOADING_TEMPLATE_LABEL) {
@@ -419,6 +437,7 @@ public class SyncopeView extends ViewPart {
 				} finally {
 					display.syncExec(new Runnable() {
 						public void run() {
+							refreshAction.setEnabled(true);
 							SyncopeView.this.viewer.refresh();
 						}
 					});
