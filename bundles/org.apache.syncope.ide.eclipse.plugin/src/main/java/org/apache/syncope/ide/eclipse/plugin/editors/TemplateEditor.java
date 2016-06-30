@@ -1,21 +1,27 @@
 package org.apache.syncope.ide.eclipse.plugin.editors;
 
+import org.apache.syncope.common.lib.types.MailTemplateFormat;
+import org.apache.syncope.ide.eclipse.plugin.views.SyncopeView;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.ide.IDE;
 
 public class TemplateEditor extends MultiPageEditorPart implements IResourceChangeListener{
 
 	public static final String ID = "org.apache.syncope.ide.eclipse.plugin.editors.TemplateEditor";
+	private static final String SAVE_TEMPLATE_LABEL = "Saving Template";
 	
 	private TextEditor editor;
 	private TemplateEditorInput input;
@@ -50,14 +56,37 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 	}
 	
 	public void doSave(IProgressMonitor monitor) {
-		getEditor(0).doSave(monitor);
+		ITextEditor ite = (ITextEditor) getActiveEditor();
+		String content = ite.getDocumentProvider().getDocument(ite.getEditorInput()).get();
+		Job saveJob = new Job(SAVE_TEMPLATE_LABEL){
+			@Override
+			protected IStatus run(IProgressMonitor arg0) {
+				try{
+					SyncopeView.setMailTemplateContent(ite.getTitleToolTip(), 
+							MailTemplateFormat.HTML, content);
+				} catch (Exception e){
+					e.printStackTrace();
+				} finally {
+					Display.getDefault().syncExec(new Runnable() {
+						@Override
+						public void run() {
+							ite.doSave(monitor);
+							System.out.println("Monitor done called");
+						}
+					});
+				}
+				if (monitor.isCanceled()) {
+		            return org.eclipse.core.runtime.Status.CANCEL_STATUS;
+		        }
+		        return org.eclipse.core.runtime.Status.OK_STATUS;
+			}
+		};
+		saveJob.setUser(true);
+		saveJob.schedule();
 	}
 	
 	public void doSaveAs() {
-		IEditorPart editor = getEditor(0);
-		editor.doSaveAs();
-		setPageText(0, editor.getTitle());
-		setInput(editor.getEditorInput());
+		getActiveEditor().doSaveAs();
 	}
 	public void gotoMarker(IMarker marker) {
 		setActivePage(0);
@@ -79,7 +108,7 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 	}
 	
 	public boolean isSaveAsAllowed() {
-		return false;
+		return true;
 	}
 	
 	protected void pageChange(int newPageIndex) {

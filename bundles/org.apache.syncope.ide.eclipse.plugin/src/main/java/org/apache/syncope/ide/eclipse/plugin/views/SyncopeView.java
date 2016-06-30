@@ -1,5 +1,6 @@
 package org.apache.syncope.ide.eclipse.plugin.views;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Scanner;
@@ -41,7 +42,7 @@ public class SyncopeView extends ViewPart {
 
 	private TreeViewer viewer;
 	public ViewContentProvider vcp;
-	private SyncopeClient syncopeClient;
+	private static SyncopeClient syncopeClient;
 	private Action loginAction;
 	private Action refreshAction;
 	private Action doubleClickAction;
@@ -60,7 +61,7 @@ public class SyncopeView extends ViewPart {
 	private static final String REMOVE_ACTION_TEXT = "Remove template";
 	private static final String TEMPLATE_FORMAT_HTML = "HTML";
 	private static final String TEMPLATE_FORMAT_CSV = "CSV";
-	private static final String TEMPLATE_FORMAT_XSLT = "XSLT";
+	private static final String TEMPLATE_FORMAT_XSLT = "XSL-FO";
 	private static final String TEMPLATE_FORMAT_TEXT = "TEXT";
 	private static final String LOADING_TEMPLATE_FORMAT_LABEL = "Loading template data";
 	private static final String LOADING_TEMPLATE_LABEL = "Loading Templates";
@@ -467,4 +468,14 @@ public class SyncopeView extends ViewPart {
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
+	
+	public static void setMailTemplateContent(String key, MailTemplateFormat format, String content){
+		MailTemplateService mailTemplateService = syncopeClient.getService(MailTemplateService.class);
+		mailTemplateService.setFormat(key, format, new ByteArrayInputStream(content.getBytes()));
+	}
+	public static void setReportTemplateContent(String key, ReportTemplateFormat format, String content){
+		ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
+		reportTemplateService.setFormat(key, format, new ByteArrayInputStream(content.getBytes()));
+	}
+
 }
