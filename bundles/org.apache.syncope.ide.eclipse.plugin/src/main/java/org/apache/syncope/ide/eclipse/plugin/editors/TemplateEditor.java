@@ -12,10 +12,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
-import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
+
 import org.eclipse.ui.ide.IDE;
 
 public class TemplateEditor extends MultiPageEditorPart implements IResourceChangeListener{
@@ -23,7 +23,7 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 	public static final String ID = "org.apache.syncope.ide.eclipse.plugin.editors.TemplateEditor";
 	private static final String SAVE_TEMPLATE_LABEL = "Saving Template";
 	
-	private TextEditor editor;
+	private GenericEditor editor;
 	private TemplateEditorInput input;
 	
 	private String[] inputStringList;
@@ -32,7 +32,7 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 	
 	void createPage(String inputString, String title, String tooltip) {
 		try {
-			editor = new TextEditor();
+			editor = new GenericEditor(title);
 			int index = addPage(editor, (IEditorInput)new TemplateEditorInput(inputString, title, tooltip));
 			setPageText(index, editor.getTitle());
 		} catch (PartInitException e) {
