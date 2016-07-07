@@ -1,5 +1,8 @@
 package org.apache.syncope.ide.eclipse.plugin.editors;
 
+import org.apache.syncope.ide.eclipse.plugin.editors.htmlhelpers.HTMLFileDocumentProvider;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
 
 public class GenericEditor extends TextEditor{
@@ -15,5 +18,10 @@ public class GenericEditor extends TextEditor{
 			default: break;
 		}
 		
+	}
+	
+	protected final void doSetInput(IEditorInput input) throws CoreException {
+		setDocumentProvider(new HTMLFileDocumentProvider());
+		super.doSetInput(input);
 	}
 }
