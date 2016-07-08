@@ -12,18 +12,21 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
+import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
-
+import org.eclipse.wst.sse.ui.StructuredTextEditor;
 import org.eclipse.ui.ide.IDE;
 
 public class TemplateEditor extends MultiPageEditorPart implements IResourceChangeListener{
 
 	public static final String ID = "org.apache.syncope.ide.eclipse.plugin.editors.TemplateEditor";
 	private static final String SAVE_TEMPLATE_LABEL = "Saving Template";
+	private static final String ERROR_NESTED_EDITOR = "Error creating nested text editor";
+	private static final String ERROR_INCORRECT_INPUT = "Wrong Input";
 	
-	private GenericEditor editor;
+	private TextEditor editor;
 	private TemplateEditorInput input;
 	
 	private String[] inputStringList;
@@ -32,13 +35,17 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 	
 	void createPage(String inputString, String title, String tooltip) {
 		try {
-			editor = new GenericEditor(title);
+			if(title.equals(SyncopeView.TEMPLATE_FORMAT_HTML))
+				editor = new HTMLEditor(title);
+			else{
+				editor = new StructuredTextEditor(); 
+			}
 			int index = addPage(editor, (IEditorInput)new TemplateEditorInput(inputString, title, tooltip));
 			setPageText(index, editor.getTitle());
 		} catch (PartInitException e) {
 			ErrorDialog.openError(
 				getSite().getShell(),
-				"Error creating nested text editor",
+				ERROR_NESTED_EDITOR,
 				null,
 				e.getStatus());
 		}
@@ -71,7 +78,6 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 						@Override
 						public void run() {
 							ite.doSave(monitor);
-							System.out.println("Monitor done called");
 						}
 					});
 				}
@@ -94,7 +100,7 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 	}
 	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
 		if (!(editorInput instanceof TemplateEditorInput)) {
-			throw new RuntimeException("Wrong input");
+			throw new RuntimeException(ERROR_INCORRECT_INPUT);
 		}
 		this.input = (TemplateEditorInput) editorInput;
 		
