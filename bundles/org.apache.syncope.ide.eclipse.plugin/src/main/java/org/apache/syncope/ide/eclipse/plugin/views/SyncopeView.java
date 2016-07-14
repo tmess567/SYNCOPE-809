@@ -62,7 +62,7 @@ public class SyncopeView extends ViewPart {
 	public static final String TEMPLATE_FORMAT_HTML = "HTML";
 	public static final String TEMPLATE_FORMAT_XSL_HTML = "XSL-HTML";
 	public static final String TEMPLATE_FORMAT_CSV = "CSV";
-	public static final String TEMPLATE_FORMAT_XSLT = "XSL-FO";
+	public static final String TEMPLATE_FORMAT_XSL_FO = "XSL-FO";
 	public static final String TEMPLATE_FORMAT_TEXT = "TEXT";
 	private static final String LOADING_TEMPLATE_FORMAT_LABEL = "Loading template data";
 	private static final String LOADING_TEMPLATE_LABEL = "Loading Templates";
@@ -377,7 +377,7 @@ public class SyncopeView extends ViewPart {
 		} else if (tp.getName().equals(REPORT_TEMPLATE_LABEL)) {
 			ReportTemplateService reportTemplateService = syncopeClient.getService(ReportTemplateService.class);
 			final String[] templateData = new String[3];
-			String[] editorTitles = { TEMPLATE_FORMAT_CSV, TEMPLATE_FORMAT_XSLT, TEMPLATE_FORMAT_XSL_HTML };
+			String[] editorTitles = { TEMPLATE_FORMAT_CSV, TEMPLATE_FORMAT_XSL_FO, TEMPLATE_FORMAT_XSL_HTML };
 			String[] editorToolTips = { obj.getName(), obj.getName(), obj.getName() };
 			Job job = new Job(LOADING_TEMPLATE_FORMAT_LABEL) {
 				@Override

@@ -1,6 +1,10 @@
 package org.apache.syncope.ide.eclipse.plugin.editors;
 
+import org.apache.syncope.common.lib.SyncopeClientException;
+import org.apache.syncope.common.lib.types.ClientExceptionType;
 import org.apache.syncope.common.lib.types.MailTemplateFormat;
+import org.apache.syncope.common.lib.types.ReportTemplateFormat;
+import org.apache.syncope.ide.eclipse.plugin.Activator;
 import org.apache.syncope.ide.eclipse.plugin.views.SyncopeView;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -36,7 +40,7 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 	void createPage(String inputString, String title, String tooltip) {
 		try {
 			if(title.equals(SyncopeView.TEMPLATE_FORMAT_HTML))
-				editor = new HTMLEditor(title);
+				editor = new HTMLEditor();
 			else{
 				editor = new StructuredTextEditor(); 
 			}
@@ -69,9 +73,49 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 			@Override
 			protected IStatus run(IProgressMonitor arg0) {
 				try{
-					SyncopeView.setMailTemplateContent(ite.getTitleToolTip(), 
-							MailTemplateFormat.HTML, content);
-				} catch (Exception e){
+					switch(ite.getTitle()){
+						case SyncopeView.TEMPLATE_FORMAT_HTML : 
+							SyncopeView.setMailTemplateContent(ite.getTitleToolTip(), 
+									MailTemplateFormat.HTML, content);
+							break;
+						case SyncopeView.TEMPLATE_FORMAT_TEXT : 
+							SyncopeView.setMailTemplateContent(ite.getTitleToolTip(), 
+									MailTemplateFormat.TEXT, content);
+							break;
+						case SyncopeView.TEMPLATE_FORMAT_CSV : 
+							SyncopeView.setReportTemplateContent(ite.getTitleToolTip(), 
+									ReportTemplateFormat.CSV, content);
+							break;
+						case SyncopeView.TEMPLATE_FORMAT_XSL_FO : 
+							SyncopeView.setReportTemplateContent(ite.getTitleToolTip(), 
+									ReportTemplateFormat.FO, content);
+							break;
+						case SyncopeView.TEMPLATE_FORMAT_XSL_HTML : 
+							SyncopeView.setReportTemplateContent(ite.getTitleToolTip(), 
+									ReportTemplateFormat.HTML, content);
+							break;
+						default : throw new Exception("Not a valid editor title");
+					}
+					
+				} catch (SyncopeClientException e){
+					e.printStackTrace();
+					if(ClientExceptionType.NotFound.equals(e.getType())){
+						/*
+						 * If a deleted template is being edited
+						 * close editor and display error
+						 */
+						Display.getDefault().syncExec(new Runnable() {
+							@Override
+							public void run() {
+								TemplateEditor.this.getSite().getPage().closeEditor(
+										TemplateEditor.this, false);
+							}
+						});
+						return new org.eclipse.core.runtime.Status(
+								org.eclipse.core.runtime.Status.ERROR,Activator.PLUGIN_ID,
+								"Template No longer exists");
+		            }
+				}  catch (Exception e){
 					e.printStackTrace();
 				} finally {
 					Display.getDefault().syncExec(new Runnable() {
@@ -127,7 +171,8 @@ public class TemplateEditor extends MultiPageEditorPart implements IResourceChan
 				public void run(){
 					IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
 					for (int i = 0; i<pages.length; i++){
-						if(((FileEditorInput)editor.getEditorInput()).getFile().getProject().equals(event.getResource())){
+						if(((FileEditorInput)editor.getEditorInput()).getFile().getProject()
+								.equals(event.getResource())){
 							IEditorPart editorPart = pages[i].findEditor(editor.getEditorInput());
 							pages[i].closeEditor(editorPart,true);
 						}

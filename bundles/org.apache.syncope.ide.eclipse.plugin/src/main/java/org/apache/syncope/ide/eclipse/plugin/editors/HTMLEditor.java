@@ -6,7 +6,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
 
 public class HTMLEditor extends TextEditor{
-	public HTMLEditor(String title){
+	public HTMLEditor(){
 		super();
 		setSourceViewerConfiguration(new HTMLSourceConfiguration());
 	}
