@@ -3,30 +3,44 @@
   <groupId>org.apache.syncope.ide.eclipse</groupId>
   <artifactId>org.apache.syncope.ide.eclipse.plugin</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-  <name>Syncope-809</name>
+  <name>org.apache.syncope.ide.eclipse.plugin</name>
   <description>Syncope-809 GSoC Project (Eclipse Plugin for Apache Syncope deployment : Allows user to view and edit Mail Templates and Report Templates from Eclipse itself)</description>
   <packaging>eclipse-plugin</packaging>
   <parent>
     <groupId>org.apache.syncope.ide.eclipse</groupId>
-    <artifactId>org.apache.syncope.ide.eclipse.bundles</artifactId>
+    <artifactId>org.apache.syncope.ide.eclipse.root</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../../</relativePath>
   </parent>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.syncope.client</groupId>
+      <artifactId>syncope-client-lib</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+  
   <build>
     <outputDirectory>./bin</outputDirectory>
     <plugins>
       <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>2.5</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.10</version>
         <executions>
           <execution>
-            <id>default-clean</id>
-            <configuration>
-              <excludeDefaultDirectories>true</excludeDefaultDirectories>
-            </configuration>
+            <id>copy-dependencies</id>
             <phase>initialize</phase>
             <goals>
-              <goal>clean</goal>
+              <goal>copy-dependencies</goal>
             </goals>
+            <configuration>
+              <outputDirectory>target/lib</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
           </execution>
         </executions>
       </plugin>

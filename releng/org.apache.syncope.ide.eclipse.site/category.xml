@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <bundle id="org.apache.syncope.ide.eclipse.plugin" version="1.0.0.qualifier">
+      <category name="apachesyncope"/>
+   </bundle>
+   <category-def name="apachesyncope" label="Apache Syncope">
+      <description>
+         Syncope-809 GSoC Project (Eclipse Plugin for Apache Syncope deployment : Allows user to view and edit Mail Templates and Report Templates from Eclipse itself)
+      </description>
+   </category-def>
+</site>
