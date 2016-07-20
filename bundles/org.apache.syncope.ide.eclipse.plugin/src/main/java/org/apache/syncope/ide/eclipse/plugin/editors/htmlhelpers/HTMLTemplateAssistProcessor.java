@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.syncope.ide.eclipse.plugin.editors.htmlhelpers;
 
 import java.util.ArrayList;
@@ -17,53 +35,57 @@ import org.eclipse.swt.graphics.Image;
 
 public class HTMLTemplateAssistProcessor extends TemplateCompletionProcessor {
 
-	protected Template[] getTemplates(String contextTypeId) {
-		HTMLTemplateManager manager = HTMLTemplateManager.getInstance();
-		return manager.getTemplateStore().getTemplates();
-	}
+    protected Template[] getTemplates(final String contextTypeId) {
+        HTMLTemplateManager manager = HTMLTemplateManager.getInstance();
+        return manager.getTemplateStore().getTemplates();
+    }
 
-	protected TemplateContextType getContextType(ITextViewer viewer, IRegion region) {
-		HTMLTemplateManager manager = HTMLTemplateManager.getInstance();
-		return manager.getContextTypeRegistry().getContextType(HTMLContextType.CONTEXT_TYPE);
-	}
-	
-	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
+    protected TemplateContextType getContextType(final ITextViewer viewer, final IRegion region) {
+        HTMLTemplateManager manager = HTMLTemplateManager.getInstance();
+        return manager.getContextTypeRegistry().getContextType(HTMLContextType.CONTEXT_TYPE);
+    }
 
-		ITextSelection selection= (ITextSelection) viewer.getSelectionProvider().getSelection();
+    public ICompletionProposal[] computeCompletionProposals(final ITextViewer viewer, final int offsetinp) {
 
-		// adjust offset to end of normalized selection
-		if (selection.getOffset() == offset)
-			offset= selection.getOffset() + selection.getLength();
+        int offset = offsetinp;
+        ITextSelection selection = (ITextSelection) viewer.getSelectionProvider().getSelection();
 
-		String prefix= extractPrefix(viewer, offset);
-		Region region= new Region(offset - prefix.length(), prefix.length());
-		TemplateContext context= createContext(viewer, region);
-		if (context == null)
-			return new ICompletionProposal[0];
+        // adjust offset to end of normalized selection
+        if (selection.getOffset() == offset) {
+            offset = selection.getOffset() + selection.getLength();
+        }
 
-		context.setVariable("selection", selection.getText()); // name of the selection variables {line, word}_selection //$NON-NLS-1$
+        String prefix = extractPrefix(viewer, offset);
+        Region region = new Region(offset - prefix.length(), prefix.length());
+        TemplateContext context = createContext(viewer, region);
+        if (context == null) {
+            return new ICompletionProposal[0];
+        }
 
-		Template[] templates= getTemplates(context.getContextType().getId());
+        context.setVariable("selection", selection.getText());
 
-		List<ICompletionProposal> matches= new ArrayList<ICompletionProposal>();
-		for (int i= 0; i < templates.length; i++) {
-			Template template= templates[i];
-			try {
-				context.getContextType().validate(template.getPattern());
-			} catch (TemplateException e) {
-				continue;
-			}
-			if (template.getName().startsWith(prefix) && 
-					template.matches(prefix, context.getContextType().getId()))
-				matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
-		}
+        Template[] templates = getTemplates(context.getContextType().getId());
 
-		return matches.toArray(new ICompletionProposal[matches.size()]);
-	}
+        List<ICompletionProposal> matches = new ArrayList<ICompletionProposal>();
+        for (int i = 0; i < templates.length; i++) {
+            Template template = templates[i];
+            try {
+                context.getContextType().validate(template.getPattern());
+            } catch (final TemplateException e) {
+                continue;
+            }
+            if (template.getName().startsWith(prefix)
+                && template.matches(prefix, context.getContextType().getId())) {
+                matches.add(createProposal(template, context, (IRegion) region, getRelevance(template, prefix)));
+            }
+        }
 
-	@Override
-	protected Image getImage(Template arg0) {
-		return null;
-	}
-	
+        return matches.toArray(new ICompletionProposal[matches.size()]);
+    }
+
+    @Override
+    protected Image getImage(final Template arg0) {
+        return null;
+    }
+
 }
