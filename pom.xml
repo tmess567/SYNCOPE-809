@@ -44,6 +44,8 @@ under the License.
     </repositories>
 
     <properties>
+        <checkstyle.skip>true</checkstyle.skip>
+        <rat.skip>true</rat.skip>
         <rootpom.basedir>${basedir}/../..</rootpom.basedir>
     </properties>
 
