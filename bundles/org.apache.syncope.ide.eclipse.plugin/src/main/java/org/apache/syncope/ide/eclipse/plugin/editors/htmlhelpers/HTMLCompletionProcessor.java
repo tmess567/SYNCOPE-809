@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
-
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ContextInformation;
@@ -38,9 +37,7 @@ public class HTMLCompletionProcessor extends HTMLTemplateAssistProcessor {
     private boolean xhtmlMode = false;
     private char[] chars = {};
     private boolean assistCloseTag = true;
-
     protected String[] getLastWord(final String text) {
-
         StringBuilder sb = new StringBuilder();
         Stack<String> stack = new Stack<String>();
         String word    = "";
@@ -139,9 +136,7 @@ public class HTMLCompletionProcessor extends HTMLTemplateAssistProcessor {
         return new String[]{word, prevTag, lastTag, attr};
     }
 
-    /**
-     * Tests a character is delimiter or not delimiter.
-     */
+    //Tests a character is delimiter or not delimiter.
     protected boolean isDelimiter(final char c) {
         return (c == ' ' || c == '(' || c == ')' || c == ',' //|| c == '.'
                 || c == ';' || c == '\n' || c == '\r' || c == '\t' || c == '+'
@@ -277,9 +272,16 @@ public class HTMLCompletionProcessor extends HTMLTemplateAssistProcessor {
                 if (word.equals("</")) {
                     length = 2;
                 }
-                list.add(new CompletionProposal(
-                        assistKeyword, documentOffset - length, length,
-                        assistKeyword.length()));
+                String contentBefore = viewer.getDocument().get().substring(0, documentOffset-length);
+                if(contentBefore.endsWith("\t")){
+                	list.add(new CompletionProposal(
+                            assistKeyword, documentOffset - (length+1), length+1,
+                            assistKeyword.length()));
+                } else {
+                	list.add(new CompletionProposal(
+                            assistKeyword, documentOffset - length, length,
+                            assistKeyword.length()));
+                }
             }
         }
 
